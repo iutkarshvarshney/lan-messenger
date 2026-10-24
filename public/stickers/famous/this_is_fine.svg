@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#BF360C"/><stop offset="100%" style="stop-color:#E64A19"/></linearGradient>
+    <filter id="s"><feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.4"/></filter>
+  </defs>
+  <rect width="200" height="200" rx="20" fill="url(#bg)"/>
+  <rect x="4" y="4" width="192" height="192" rx="18" fill="none" stroke="#FFAB40" stroke-width="2"/>
+  <!-- Floor tiles -->
+  <rect x="10" y="140" width="180" height="55" rx="0" fill="#8B3500"/>
+  <line x1="10" y1="155" x2="190" y2="155" stroke="#7A2E00" stroke-width="1"/>
+  <line x1="10" y1="170" x2="190" y2="170" stroke="#7A2E00" stroke-width="1"/>
+  <line x1="55" y1="140" x2="55" y2="195" stroke="#7A2E00" stroke-width="1"/>
+  <line x1="100" y1="140" x2="100" y2="195" stroke="#7A2E00" stroke-width="1"/>
+  <line x1="145" y1="140" x2="145" y2="195" stroke="#7A2E00" stroke-width="1"/>
+  <!-- Fire -->
+  <path d="M 10 140 Q 25 110 30 140 Q 45 100 55 140 Q 70 105 80 140 Q 95 100 105 140 Q 120 108 130 140 Q 145 102 155 140 Q 165 108 175 140 L 190 140 L 190 60 Q 150 70 100 55 Q 50 70 10 60 Z" fill="#FF6F00" opacity="0.85"/>
+  <path d="M 25 140 Q 35 115 42 140 Q 58 108 70 140 Q 85 112 95 140 Q 110 115 120 140 Q 132 118 140 140 Q 155 112 165 140" fill="#FFC107" opacity="0.7"/>
+  <!-- Dog sitting at table -->
+  <!-- Table -->
+  <rect x="50" y="100" width="100" height="8" rx="2" fill="#5D4037"/>
+  <rect x="60" y="108" width="8" height="32" rx="2" fill="#4E342E"/>
+  <rect x="132" y="108" width="8" height="32" rx="2" fill="#4E342E"/>
+  <!-- Dog face (simple) -->
+  <circle cx="100" cy="88" r="16" fill="#EFEBE9" stroke="#8D6E63" stroke-width="1.5"/>
+  <circle cx="95" cy="84" r="2" fill="#333"/><circle cx="105" cy="84" r="2" fill="#333"/>
+  <path d="M 95 93 Q 100 97 105 93" fill="none" stroke="#555" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Coffee cup -->
+  <rect x="88" y="93" width="18" height="14" rx="3" fill="#fff" stroke="#ccc" stroke-width="1"/>
+  <path d="M 106 98 Q 112 98 112 104 Q 112 108 106 107" fill="none" stroke="#ccc" stroke-width="1.5"/>
+  <!-- Steam -->
+  <path d="M 93 91 Q 91 86 93 82" fill="none" stroke="#ccc" stroke-width="1" opacity="0.6"/>
+  <path d="M 100 90 Q 98 85 100 81" fill="none" stroke="#ccc" stroke-width="1" opacity="0.6"/>
+  <text x="100" y="20" text-anchor="middle" font-family="Impact,sans-serif" font-size="14" font-weight="900" fill="#fff" filter="url(#s)">THIS IS FINE</text>
+  <text x="100" y="180" text-anchor="middle" font-family="Impact,sans-serif" font-size="11" font-weight="900" fill="#FFAB40" filter="url(#s)">🔥 everything is fine 🔥</text>
+</svg>

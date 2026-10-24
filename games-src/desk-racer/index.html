@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Desk Racer</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  <script src="/js/game-frame-bridge.js"></script></head>
+  <body>
+    <!-- 3D WebGL Canvas Mount -->
+    <div id="canvas-container"></div>
+
+    <!-- Helmet Visor Overlay (Visible in Camera 2: Helmet Visor POV — Clean, no top chip) -->
+    <div id="helmet-visor-overlay" class="hidden">
+      <div class="visor-vignette"></div>
+    </div>
+
+    <!-- Subtle Corner Vignette Behind HUD Elements (Visible in Camera Views 1 & 2) -->
+    <div id="hud-corner-vignette"></div>
+
+    <!-- Streamlined HUD Overlay -->
+    <div id="hud-root">
+      <!-- Top Row: Clickable "Desk Racer" Title (Top-Left) & Lap Counter/Timer + Mute Icon (Top-Right) -->
+      <header class="hud-top-bar">
+        <div class="hud-top-left-stack">
+          <div
+            id="hud-brand-logo"
+            class="hud-brand-title"
+            role="button"
+            tabindex="0"
+            title="Click to open Controls &amp; Camera Menu"
+          >Desk Racer</div>
+        </div>
+
+        <div class="hud-settings-anchor">
+          <div class="hud-top-right-row">
+            <!-- Top-Right Lap Counter & Lap Timer (Visible in 1P & 2P Views) -->
+            <div id="hud-lap-widget" class="hud-lap-widget">
+              <div id="hud-lap-header" class="hud-lap-header">
+                LAP <span id="hud-lap-curr" class="hud-lap-curr">1</span>/3
+              </div>
+              <div id="hud-lap-timer" class="hud-lap-timer" aria-label="00:00.00"><span class="timer-digit" id="lap-d0">0</span><span class="timer-digit" id="lap-d1">0</span><span class="timer-sep">:</span><span class="timer-digit" id="lap-d2">0</span><span class="timer-digit" id="lap-d3">0</span><span class="timer-sep">.</span><span class="timer-digit" id="lap-d4">0</span><span class="timer-digit" id="lap-d5">0</span></div>
+              <div id="hud-lap-split" class="hud-lap-split hidden"></div>
+            </div>
+
+            <!-- Top-Right Mute / Unmute Sound Icon Button -->
+            <button
+              id="btn-mute-sound"
+              class="hud-mute-btn is-muted"
+              type="button"
+              aria-label="Toggle Sound (M)"
+              title="Toggle Sound (M)"
+            >
+              <!-- Speaker Unmuted Icon -->
+              <svg id="icon-sound-on" class="mute-svg hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+              </svg>
+              <!-- Speaker Muted Icon -->
+              <svg id="icon-sound-off" class="mute-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <line x1="23" y1="9" x2="17" y2="15"></line>
+                <line x1="17" y1="9" x2="23" y2="15"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Welcome & Controls Dialog (Shown on Launch & When Clicking "Desk Racer") -->
+      <div id="welcome-dialog-overlay" class="welcome-dialog-overlay">
+        <div class="welcome-dialog-card" role="dialog" aria-labelledby="welcome-title">
+          <div class="welcome-eyebrow">DESKTOP CIRCUIT · 3 LAPS</div>
+          <h1 id="welcome-title" class="welcome-title">DESK RACER</h1>
+
+          <div class="welcome-controls-grid">
+            <!-- WASD Controls -->
+            <div class="welcome-control-block">
+              <div class="welcome-control-label">CONTROLS</div>
+              <div class="control-keys-list" aria-label="WASD Controls">
+                <div class="control-key-row">
+                  <div class="control-kbd-pair">
+                    <kbd class="welcome-key">W</kbd>
+                  </div>
+                  <span>ACCELERATE</span>
+                </div>
+                <div class="control-key-row">
+                  <div class="control-kbd-pair">
+                    <kbd class="welcome-key">A</kbd>
+                    <kbd class="welcome-key">D</kbd>
+                  </div>
+                  <span>STEER</span>
+                </div>
+                <div class="control-key-row">
+                  <div class="control-kbd-pair">
+                    <kbd class="welcome-key">S</kbd>
+                  </div>
+                  <span>BRAKE</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Game Views 1-4 -->
+            <div class="welcome-control-block">
+              <div class="welcome-control-label">GAME VIEWS</div>
+              <div class="cam-keys-list">
+                <div class="cam-key-row cam-pill active" data-cam="1"><kbd class="welcome-key welcome-key-cyan">1</kbd><span>CHASE VIEW</span></div>
+                <div class="cam-key-row cam-pill" data-cam="2"><kbd class="welcome-key welcome-key-cyan">2</kbd><span>COCKPIT</span></div>
+                <div class="cam-key-row cam-pill" data-cam="3"><kbd class="welcome-key welcome-key-cyan">3</kbd><span>FULL DESK VIEW</span></div>
+                <div class="cam-key-row cam-pill" data-cam="4"><kbd class="welcome-key welcome-key-cyan">4</kbd><span>DRONE VIEW</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="welcome-footer-row">
+            <button id="btn-welcome-start" class="welcome-start-btn" type="button">
+              <span id="welcome-start-text" class="welcome-start-text">START TIME TRIAL</span>
+              <kbd id="welcome-enter-kbd" class="welcome-enter-kbd">ENTER ↵</kbd>
+              <span class="welcome-btn-progress-track" aria-hidden="true">
+                <span id="welcome-btn-progress-fill" class="welcome-btn-progress-fill"></span>
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center Formula 1 Countdown Number (Triggered by pressing Enter at Start) -->
+      <div id="hud-f1-countdown" class="hud-f1-countdown hidden">5</div>
+
+      <div id="hud-finish-overlay" class="welcome-dialog-overlay hud-finish-overlay hidden" role="dialog" aria-labelledby="hud-finish-title">
+        <div class="welcome-dialog-card finish-dialog-card">
+          <div class="welcome-eyebrow">DESKTOP CIRCUIT · 3 LAPS COMPLETE</div>
+          <h2 id="hud-finish-title" class="hud-finish-title">FINISH</h2>
+          <div id="hud-finish-time" class="hud-finish-time">00:00.00</div>
+          <div id="hud-finish-sub" class="hud-finish-sub">BEST LAP 00:00.00</div>
+          <div class="finish-actions-row">
+            <button id="btn-finish-race-again" class="welcome-start-btn finish-action-btn" type="button">
+              <span class="welcome-start-text">RACE AGAIN</span>
+              <kbd class="welcome-enter-kbd">ENTER ↵</kbd>
+            </button>
+            <button id="btn-finish-autopilot" class="welcome-start-btn finish-action-btn finish-autopilot-btn" type="button">
+              <span class="welcome-start-text">AUTO-PILOT</span>
+              <kbd class="welcome-enter-kbd">P</kbd>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Row: 3D Tilted Racetrack Minimap (Bottom-Left) | Angled Segmented Speedometer HUD (Bottom-Right) -->
+      <footer class="hud-bottom-bar">
+        <!-- Bottom-Left: Borderless Horizontally-Tilted 3D Racetrack Outline & Cyan Glowing Dot -->
+        <div class="hud-minimap-widget" title="Live Racetrack Position">
+          <canvas id="minimap-canvas" width="600" height="390"></canvas>
+        </div>
+
+        <!-- Bottom-Right: Sleek Angled Segmented Speed Bar + Italic KM/H & Speed Readout -->
+        <div class="hud-speedo-gauge">
+          <svg id="speedo-gauge-svg" viewBox="0 0 284 134" class="speedo-svg">
+            <defs>
+              <linearGradient id="speedoFrameStrokeGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="rgba(255, 255, 255, 0.35)" />
+                <stop offset="45%" stop-color="rgba(160, 240, 255, 0.55)" />
+                <stop offset="100%" stop-color="rgba(0, 232, 255, 0.92)" />
+              </linearGradient>
+              <filter id="speedoCyanGlow" x="-25%" y="-25%" width="150%" height="150%">
+                <feGaussianBlur stdDeviation="2.4" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+            </defs>
+
+            <!-- Outer dark angled bar casing & cyan-accented frame -->
+            <polygon
+              id="speedo-bar-casing"
+              points="15,108 62,34 268,6 276,22 73,50 28,118"
+              class="speedo-bar-casing"
+              stroke="url(#speedoFrameStrokeGrad)"
+            />
+
+            <!-- 18 angled parallelogram speed segments populated dynamically at startup -->
+            <g id="speedo-ticks-group"></g>
+          </svg>
+
+          <!-- Italic KM/H label & Large Bold Italic Speed Readout tucked inside the angled bar -->
+          <div class="speedo-readout-group">
+            <div class="speedo-unit-label">KM/H</div>
+            <div id="hud-scale-speed" class="speedo-digits">0</div>
+          </div>
+        </div>
+      </footer>
+
+      <!-- Mobile Bottom Touch Controls Row (Visible in Mobile View after clicking Start Time Trial) -->
+      <div
+        id="mobile-touch-controls"
+        class="mobile-touch-controls hidden"
+        role="region"
+        aria-label="Mobile Driving Controls"
+      >
+        <!-- Left Side: Left (A) and Right (D) Steer Icons -->
+        <div class="mobile-ctrl-cluster mobile-steer-cluster" role="group" aria-label="Steering Controls">
+          <button
+            id="btn-touch-left"
+            class="mobile-ctrl-btn mobile-ctrl-steer"
+            type="button"
+            data-control="left"
+            aria-label="Steer Left (A)"
+            title="Steer Left (A)"
+          >
+            <span class="mobile-ctrl-inner">
+              <svg class="mobile-ctrl-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="13 17 8 12 13 7"></polyline>
+                <polyline points="18 17 13 12 18 7" opacity="0.45"></polyline>
+              </svg>
+              <span class="mobile-ctrl-label">LEFT</span>
+            </span>
+          </button>
+
+          <button
+            id="btn-touch-right"
+            class="mobile-ctrl-btn mobile-ctrl-steer"
+            type="button"
+            data-control="right"
+            aria-label="Steer Right (D)"
+            title="Steer Right (D)"
+          >
+            <span class="mobile-ctrl-inner">
+              <svg class="mobile-ctrl-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="11 17 16 12 11 7"></polyline>
+                <polyline points="6 17 11 12 6 7" opacity="0.45"></polyline>
+              </svg>
+              <span class="mobile-ctrl-label">RIGHT</span>
+            </span>
+          </button>
+        </div>
+
+        <!-- Right Side: Accelerate (W) and Brake (S) Icons -->
+        <div class="mobile-ctrl-cluster mobile-pedal-cluster" role="group" aria-label="Accelerate and Brake Controls">
+          <button
+            id="btn-touch-accel"
+            class="mobile-ctrl-btn mobile-ctrl-accel"
+            type="button"
+            data-control="forward"
+            aria-label="Accelerate (W)"
+            title="Accelerate (W)"
+          >
+            <span class="mobile-ctrl-inner">
+              <svg class="mobile-ctrl-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="17 13 12 8 7 13"></polyline>
+                <polyline points="17 18 12 13 7 18" opacity="0.45"></polyline>
+              </svg>
+              <span class="mobile-ctrl-label">ACCEL</span>
+            </span>
+          </button>
+
+          <button
+            id="btn-touch-brake"
+            class="mobile-ctrl-btn mobile-ctrl-brake"
+            type="button"
+            data-control="backward"
+            aria-label="Brake (S)"
+            title="Brake (S)"
+          >
+            <span class="mobile-ctrl-inner">
+              <svg class="mobile-ctrl-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="7 8 12 13 17 8"></polyline>
+                <line x1="7" y1="17" x2="17" y2="17"></line>
+              </svg>
+              <span class="mobile-ctrl-label">BRAKE</span>
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

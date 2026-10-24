@@ -1,0 +1,1306 @@
+:root {
+  --bg-glass: rgba(14, 16, 24, 0.72);
+  --bg-glass-strong: rgba(10, 12, 19, 0.88);
+  --border-gold: rgba(255, 178, 76, 0.34);
+  --border-blue: rgba(30, 107, 255, 0.45);
+  --gold-primary: #ffaa44;
+  --gold-bright: #ffd27d;
+  --blue-neon: #1e6bff;
+  --blue-cyan: #4cc2ff;
+  --red-fia: #ff3b30;
+  --green-ok: #32d74b;
+  --text-main: #f5f7fa;
+  --text-muted: #9aa4b8;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+}
+
+html,
+body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #0b0c10;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--text-main);
+}
+
+#canvas-container {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+}
+
+#canvas-container canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Helmet Visor POV Overlay */
+#helmet-visor-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+#helmet-visor-overlay.hidden {
+  display: none;
+}
+
+.visor-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 78% 64% at 50% 52%,
+    transparent 58%,
+    rgba(8, 16, 36, 0.45) 82%,
+    rgba(4, 6, 12, 0.92) 100%
+  );
+  border-top: 28px solid rgba(10, 12, 18, 0.92);
+  border-bottom: 22px solid rgba(10, 12, 18, 0.88);
+}
+
+.visor-frame-top {
+  position: relative;
+  z-index: 2;
+  margin: 34px auto 0;
+  padding: 4px 16px;
+  border-radius: 999px;
+  background: rgba(16, 26, 48, 0.68);
+  border: 1px solid rgba(76, 194, 255, 0.4);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--blue-cyan);
+  display: flex;
+  gap: 18px;
+}
+
+.visor-reticle {
+  position: absolute;
+  left: 50%;
+  top: 54%;
+  width: 36px;
+  height: 14px;
+  transform: translate(-50%, -50%);
+  border-left: 2px solid rgba(76, 194, 255, 0.45);
+  border-right: 2px solid rgba(76, 194, 255, 0.45);
+  border-bottom: 1px solid rgba(255, 170, 68, 0.45);
+}
+
+/* Subtle 4-Corner Vignette behind White HUD Elements in Camera Views 1 & 2 */
+#hud-corner-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 46% 36% at 0% 0%, rgba(2, 4, 10, 0.56) 0%, rgba(2, 4, 10, 0.24) 48%, rgba(2, 4, 10, 0) 100%),
+    radial-gradient(ellipse 46% 36% at 100% 0%, rgba(2, 4, 10, 0.56) 0%, rgba(2, 4, 10, 0.24) 48%, rgba(2, 4, 10, 0) 100%),
+    radial-gradient(ellipse 48% 42% at 0% 100%, rgba(2, 4, 10, 0.60) 0%, rgba(2, 4, 10, 0.28) 50%, rgba(2, 4, 10, 0) 100%),
+    radial-gradient(ellipse 48% 42% at 100% 100%, rgba(2, 4, 10, 0.62) 0%, rgba(2, 4, 10, 0.30) 50%, rgba(2, 4, 10, 0) 100%),
+    radial-gradient(ellipse 84% 78% at 50% 50%, rgba(2, 4, 10, 0) 64%, rgba(2, 4, 10, 0.34) 100%);
+}
+
+#hud-corner-vignette.hidden {
+  display: none !important;
+}
+
+/* Streamlined HUD Layout */
+#hud-root {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 4.8vh 4.5vw;
+}
+
+.hud-card {
+  pointer-events: auto;
+  background: var(--bg-glass-strong);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid var(--border-gold);
+  border-radius: 14px;
+  padding: 13px 15px;
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.62),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.hud-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.hud-bottom-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.hud-bottom-bar.hidden,
+.hud-minimap-widget.hidden,
+.hud-speedo-gauge.hidden,
+.hud-lap-widget.hidden {
+  display: none !important;
+}
+
+/* 1. Top-Left: Clickable "Desk Racer" Brand Header (Opens Welcome/Controls Dialog) */
+.hud-top-left-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.hud-brand-title {
+  pointer-events: auto;
+  cursor: pointer;
+  font-family: 'Orbitron', sans-serif;
+  font-style: italic;
+  font-size: 39px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: linear-gradient(95deg, #ffffff 0%, #ffe3a8 55%, #ffaa44 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 3px 12px rgba(0, 0, 0, 0.78))
+          drop-shadow(0 0 18px rgba(255, 170, 68, 0.25));
+  padding: 2px 4px;
+  transition: filter 0.16s ease, transform 0.16s ease;
+}
+
+.hud-brand-title:hover {
+  filter: drop-shadow(0 3px 14px rgba(0, 0, 0, 0.90))
+          drop-shadow(0 0 22px rgba(0, 229, 255, 0.55));
+  transform: scale(1.02);
+}
+
+.hud-brand-title.hidden {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* 2. Top-Right: Lap Counter/Timer + Sound Mute Toggle Button */
+.hud-settings-anchor {
+  position: relative;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.hud-top-right-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.hud-mute-btn {
+  pointer-events: auto;
+  cursor: pointer;
+  width: 40px;
+  height: 36px;
+  margin-top: 4px;
+  transform: skewX(-12deg);
+  background: rgba(6, 10, 18, 0.78);
+  border: 1.5px solid rgba(255, 255, 255, 0.34);
+  border-radius: 6px;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 3px 10px rgba(0, 0, 0, 0.88),
+    0 6px 18px rgba(0, 0, 0, 0.65);
+  transition: all 0.15s ease;
+}
+
+.hud-mute-btn svg {
+  width: 20px;
+  height: 20px;
+  transform: skewX(12deg);
+}
+
+.hud-mute-btn .hidden {
+  display: none !important;
+}
+
+.hud-mute-btn:hover {
+  border-color: #00e5ff;
+  color: #00e5ff;
+  box-shadow:
+    0 0 14px rgba(0, 229, 255, 0.48),
+    0 3px 10px rgba(0, 0, 0, 0.88);
+}
+
+.hud-mute-btn.is-muted {
+  color: rgba(255, 255, 255, 0.55);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.hud-lap-widget {
+  pointer-events: none;
+  text-align: right;
+  padding: 2px 4px 0 0;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.hud-lap-header {
+  font-family: 'Orbitron', sans-serif;
+  font-style: italic;
+  font-size: 21px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  color: #ffffff;
+  text-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.96),
+    0 4px 12px rgba(0, 0, 0, 0.88),
+    0 0 22px rgba(0, 0, 0, 0.75);
+  margin-bottom: 1px;
+}
+
+.hud-lap-curr {
+  color: #00e5ff;
+  text-shadow:
+    0 0 12px rgba(0, 229, 255, 0.65),
+    0 2px 4px rgba(0, 0, 0, 0.96),
+    0 4px 12px rgba(0, 0, 0, 0.88);
+}
+
+.hud-lap-timer {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  font-family: 'Orbitron', sans-serif;
+  font-style: italic;
+  font-size: 40px;
+  font-weight: 900;
+  line-height: 1.02;
+  letter-spacing: 0;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+  text-shadow:
+    0 2px 5px rgba(0, 0, 0, 0.98),
+    0 5px 14px rgba(0, 0, 0, 0.90),
+    0 0 26px rgba(0, 0, 0, 0.78);
+}
+
+.hud-lap-timer .timer-digit {
+  display: inline-block;
+  width: 0.78em;
+  text-align: center;
+  flex: 0 0 0.78em;
+}
+
+.hud-lap-timer .timer-sep {
+  display: inline-block;
+  width: 0.34em;
+  text-align: center;
+  flex: 0 0 0.34em;
+}
+
+.hud-lap-split {
+  font-family: 'Orbitron', sans-serif;
+  font-style: italic;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #00e5ff;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  text-shadow:
+    0 0 12px rgba(0, 229, 255, 0.65),
+    0 2px 4px rgba(0, 0, 0, 0.96),
+    0 4px 12px rgba(0, 0, 0, 0.88);
+  margin-top: 3px;
+}
+
+.hud-lap-split.hidden {
+  display: none !important;
+}
+
+.hud-f1-countdown {
+  position: fixed;
+  top: 46%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 40;
+  font-family: 'Orbitron', sans-serif;
+  font-style: italic;
+  font-size: 96px;
+  font-weight: 900;
+  line-height: 1;
+  color: #ffffff;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  text-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.98),
+    0 8px 24px rgba(0, 0, 0, 0.90),
+    0 0 34px rgba(0, 0, 0, 0.78);
+}
+
+.hud-f1-countdown.hidden {
+  display: none !important;
+}
+
+.hud-finish-overlay {
+  z-index: 62;
+}
+
+.hud-finish-overlay.hidden {
+  display: none !important;
+}
+
+.finish-dialog-card {
+  width: min(520px, 90vw);
+  padding: 30px 34px 28px;
+}
+
+.hud-finish-title {
+  font-family: 'Orbitron', sans-serif;
+  font-style: italic;
+  font-size: 44px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  margin: 0 0 6px;
+  background: linear-gradient(95deg, #ffffff 0%, #ffe3a8 55%, #ffaa44 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 3px 12px rgba(0, 0, 0, 0.92))
+          drop-shadow(0 0 22px rgba(255, 170, 68, 0.35));
+}
+
+.hud-finish-time {
+  font-family: 'Orbitron', sans-serif;
+  font-style: italic;
+  font-size: 68px;
+  font-weight: 900;
+  line-height: 1.04;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  text-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.98),
+    0 8px 24px rgba(0, 0, 0, 0.90),
+    0 0 34px rgba(0, 0, 0, 0.78);
+}
+
+.hud-finish-sub {
+  font-family: 'Orbitron', sans-serif;
+  font-style: italic;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.10em;
+  color: #00e5ff;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  text-shadow:
+    0 0 12px rgba(0, 229, 255, 0.65),
+    0 2px 4px rgba(0, 0, 0, 0.96),
+    0 4px 12px rgba(0, 0, 0, 0.88);
+  margin-top: 6px;
+  margin-bottom: 24px;
+}
+
+.finish-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.finish-action-btn {
+  padding: 12px 22px;
+  gap: 10px;
+}
+
+.finish-action-btn .welcome-start-text {
+  font-size: 16px;
+}
+
+.finish-autopilot-btn {
+  background: linear-gradient(95deg, rgba(255, 170, 68, 0.22) 0%, rgba(255, 255, 255, 0.08) 100%);
+  border-color: rgba(255, 210, 125, 0.75);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.88),
+    0 0 18px rgba(255, 170, 68, 0.25);
+}
+
+.finish-autopilot-btn:hover {
+  background: linear-gradient(95deg, rgba(255, 170, 68, 0.38) 0%, rgba(0, 229, 255, 0.22) 100%);
+  border-color: #ffd27d;
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.92),
+    0 0 26px rgba(255, 170, 68, 0.55);
+}
+
+/* Welcome & Controls Dialog Overlay (Matches Orbitron Italic White/Gold + Cyan Speedo Aesthetic) */
+.welcome-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(
+    ellipse 68% 64% at 50% 50%,
+    rgba(3, 6, 14, 0.44) 0%,
+    rgba(2, 4, 10, 0.82) 100%
+  );
+  animation: welcomeFadeIn 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.welcome-dialog-overlay.hidden {
+  display: none !important;
+}
+
+@keyframes welcomeFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.welcome-dialog-card {
+  position: relative;
+  width: min(540px, 90vw);
+  padding: 32px 36px 28px;
+  background: linear-gradient(160deg, rgba(8, 13, 24, 0.90) 0%, rgba(5, 8, 16, 0.95) 100%);
+  border: 1.5px solid rgba(0, 229, 255, 0.48);
+  border-radius: 14px;
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.92),
+    0 0 36px rgba(0, 229, 255, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  text-align: center;
+  overflow: hidden;
+}
+
+.welcome-dialog-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, rgba(255, 170, 68, 0.95) 0%, #ffffff 50%, rgba(0, 229, 255, 0.95) 100%);
+}
+
+.welcome-eyebrow {
+  font-family: 'Orbitron', sans-serif;
+  font-style: italic;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: #00e5ff;
+  text-shadow:
+    0 0 12px rgba(0, 229, 255, 0.65),
+    0 2px 4px rgba(0, 0, 0, 0.95);
+  margin-bottom: 4px;
+}
+
+.welcome-title {
+  font-family: 'Orbitron', sans-serif;
+  font-style: italic;
+  font-size: 44px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: linear-gradient(95deg, #ffffff 0%, #ffe3a8 55%, #ffaa44 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 3px 12px rgba(0, 0, 0, 0.90))
+          drop-shadow(0 0 18px rgba(255, 170, 68, 0.28));
+  margin-bottom: 24px;
+}
+
+.welcome-controls-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 26px;
+  text-align: left;
+}
+
+.welcome-control-block {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 16px 16px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.welcome-control-label {
+  font-family: 'Orbitron', sans-serif;
+  font-style: italic;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.10em;
+  color: rgba(255, 255, 255, 0.72);
+  margin-bottom: 12px;
+  width: 100%;
+  text-align: center;
+}
+
+.control-keys-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  padding: 2px 4px;
+  margin: auto 0;
+}
+
+.control-key-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  font-family: 'Orbitron', sans-serif;
+  font-style: italic;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.control-kbd-pair {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 72px;
+}
+
+.welcome-key {
+  min-width: 32px;
+  height: 30px;
+  padding: 0 8px;
+  transform: skewX(-10deg);
+  background: rgba(6, 10, 18, 0.88);
+  border: 1.5px solid rgba(255, 210, 125, 0.65);
+  border-bottom-width: 3px;
+  border-radius: 6px;
+  font-family: 'Orbitron', sans-serif;
+  font-style: italic;
+  font-size: 13.5px;
+  font-weight: 900;
+  color: #ffd27d;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.82),
+    0 0 12px rgba(255, 170, 68, 0.18);
+}
+
+.welcome-key-cyan {
+  min-width: 30px;
+  height: 26px;
+  font-size: 13px;
+  border-color: rgba(0, 229, 255, 0.68);
+  color: #00e5ff;
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.82),
+    0 0 10px rgba(0, 229, 255, 0.22);
+}
+
+.cam-keys-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  padding: 0 2px;
+}
+
+.cam-key-row {
+  pointer-events: auto;
+  cursor: pointer;
+  width: 100%;
+  padding: 4px 8px;
+  border-radius: 7px;
+  background: transparent;
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  font-family: 'Orbitron', sans-serif;
+  font-style: italic;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.88);
+  transition: all 0.14s ease;
+}
+
+.cam-key-row:hover {
+  background: rgba(0, 229, 255, 0.10);
+  border-color: rgba(0, 229, 255, 0.42);
+  color: #ffffff;
+}
+
+.cam-key-row.active {
+  background: linear-gradient(95deg, rgba(0, 229, 255, 0.20) 0%, rgba(255, 170, 68, 0.14) 100%);
+  border-color: rgba(0, 229, 255, 0.68);
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.55);
+}
+
+.welcome-footer-row {
+  display: flex;
+  justify-content: center;
+}
+
+.welcome-start-btn {
+  position: relative;
+  overflow: hidden;
+  pointer-events: auto;
+  cursor: pointer;
+  transform: skewX(-12deg);
+  padding: 13px 34px;
+  background: linear-gradient(95deg, rgba(0, 229, 255, 0.24) 0%, rgba(255, 170, 68, 0.30) 100%);
+  border: 2px solid #00e5ff;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.88),
+    0 0 22px rgba(0, 229, 255, 0.38);
+  transition: all 0.16s ease;
+}
+
+.welcome-start-btn:hover {
+  background: linear-gradient(95deg, rgba(0, 229, 255, 0.40) 0%, rgba(255, 170, 68, 0.46) 100%);
+  border-color: #ffffff;
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.92),
+    0 0 30px rgba(0, 229, 255, 0.65);
+  transform: skewX(-12deg) translateY(-1px) scale(1.02);
+}
+
+.welcome-start-btn:focus,
+.welcome-start-btn:focus-visible {
+  outline: none;
+}
+
+.welcome-start-btn.is-warming-up {
+  border-color: rgba(0, 229, 255, 0.68);
+  background: linear-gradient(95deg, rgba(0, 229, 255, 0.14) 0%, rgba(255, 170, 68, 0.18) 100%);
+}
+
+.welcome-start-btn.is-queued {
+  border-color: #ffd27d;
+  background: linear-gradient(95deg, rgba(0, 229, 255, 0.34) 0%, rgba(255, 170, 68, 0.42) 100%);
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.92),
+    0 0 28px rgba(255, 210, 125, 0.55);
+}
+
+.welcome-btn-progress-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3.5px;
+  background: rgba(6, 10, 18, 0.72);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+
+.welcome-start-btn.is-warming-up .welcome-btn-progress-track {
+  opacity: 1;
+}
+
+.welcome-btn-progress-fill {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #ffaa44 0%, #ffffff 50%, #00e5ff 100%);
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.85);
+  transition: width 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.welcome-start-text {
+  font-family: 'Orbitron', sans-serif;
+  font-style: italic;
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: #ffffff;
+  text-shadow:
+    0 0 14px rgba(0, 229, 255, 0.75),
+    0 2px 6px rgba(0, 0, 0, 0.95);
+}
+
+.welcome-enter-kbd {
+  font-family: 'Orbitron', sans-serif;
+  font-style: italic;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  padding: 4px 10px;
+  border-radius: 5px;
+  background: rgba(6, 10, 18, 0.88);
+  border: 1.5px solid rgba(255, 210, 125, 0.78);
+  color: #ffd27d;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.85);
+}
+
+/* 3. Bottom-Left: Borderless 3D Horizontally-Tilted Racetrack & Cyan Dot Mini-Map */
+.hud-minimap-widget {
+  pointer-events: auto;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#minimap-canvas {
+  display: block;
+  width: 300px;
+  height: 195px;
+}
+
+/* 4. Bottom-Right: Sleek Angled Segmented Speedometer & Italic Speed Readout */
+.hud-speedo-gauge {
+  position: relative;
+  width: 284px;
+  height: 134px;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.speedo-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter:
+    drop-shadow(0 3px 6px rgba(0, 0, 0, 0.95))
+    drop-shadow(0 7px 16px rgba(0, 0, 0, 0.82));
+}
+
+.speedo-bar-casing {
+  fill: rgba(6, 10, 18, 0.78);
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+}
+
+.speedo-seg {
+  fill: rgba(255, 255, 255, 0.12);
+  transition: fill 0.04s linear;
+}
+
+.speedo-readout-group {
+  position: absolute;
+  right: 14px;
+  bottom: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  pointer-events: none;
+}
+
+.speedo-unit-label {
+  font-family: 'Orbitron', sans-serif;
+  font-style: italic;
+  font-size: 15px;
+  font-weight: 800;
+  color: rgba(235, 244, 255, 0.92);
+  letter-spacing: 0.06em;
+  margin-bottom: 1px;
+  text-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.96),
+    0 4px 10px rgba(0, 0, 0, 0.88),
+    0 0 18px rgba(0, 0, 0, 0.75);
+}
+
+.speedo-digits {
+  font-family: 'Orbitron', sans-serif;
+  font-style: italic;
+  font-size: 62px;
+  font-weight: 900;
+  line-height: 0.92;
+  letter-spacing: 0.01em;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+  text-shadow:
+    0 3px 6px rgba(0, 0, 0, 0.98),
+    0 6px 16px rgba(0, 0, 0, 0.90),
+    0 0 28px rgba(0, 0, 0, 0.78);
+}
+
+/* Hidden on Desktop 16:9 Viewports — Only shown in Mobile Responsive View */
+.mobile-touch-controls {
+  display: none !important;
+}
+
+/* ============================================================================
+   MOBILE & 9:16 PORTRAIT VIEWPORT OPTIMIZATIONS (Desktop 16:9 untouched)
+   ============================================================================ */
+@media (max-width: 768px), (max-aspect-ratio: 4/5) {
+  /* Top and bottom edge scrims for the single-row top HUD and bottom touch controls */
+  #hud-corner-vignette {
+    background: linear-gradient(
+      180deg,
+      rgba(2, 4, 10, 0.76) 0%,
+      rgba(2, 4, 10, 0.38) 10%,
+      rgba(2, 4, 10, 0) 22%,
+      rgba(2, 4, 10, 0) 78%,
+      rgba(2, 4, 10, 0.42) 90%,
+      rgba(2, 4, 10, 0.80) 100%
+    );
+  }
+
+  /* Single-row top HUD layout containing Map (Left), KM/H Speedo (Center), Lap/Time (Right) pinned 24px from top */
+  #hud-root {
+    top: 24px;
+    bottom: auto;
+    height: auto;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 6px;
+    padding: 0 10px;
+  }
+
+  .hud-top-bar,
+  .hud-settings-anchor,
+  .hud-top-right-row,
+  .hud-bottom-bar:not(.hidden) {
+    display: contents;
+  }
+
+  /* Hide Desk Racer brand title & mute button on mobile so only the 3 HUD components sit in the top row */
+  .hud-top-left-stack,
+  #hud-brand-logo,
+  #btn-mute-sound {
+    display: none !important;
+  }
+
+  /* 1. Left Slot: Scaled 3D Racetrack Minimap */
+  .hud-minimap-widget {
+    order: 1;
+    flex: 0 0 auto;
+  }
+
+  #minimap-canvas {
+    width: clamp(86px, 25.5vw, 120px);
+    height: clamp(56px, 16.58vw, 78px);
+  }
+
+  /* 2. Center Slot: Scaled Angled Segmented Speedometer & KM/H Readout */
+  .hud-speedo-gauge {
+    order: 2;
+    flex: 0 0 auto;
+    width: clamp(100px, 29vw, 136px);
+    height: clamp(47px, 13.68vw, 64px);
+  }
+
+  .speedo-readout-group {
+    right: 5px;
+    bottom: 2px;
+  }
+
+  .speedo-unit-label {
+    font-size: clamp(7px, 2vw, 9.5px);
+    margin-bottom: 0;
+  }
+
+  .speedo-digits {
+    font-size: clamp(21px, 6.2vw, 29px);
+    line-height: 0.9;
+  }
+
+  /* 3. Right Slot: Scaled Lap Counter & Timer */
+  .hud-lap-widget {
+    order: 3;
+    flex: 0 0 auto;
+    padding: 0;
+    text-align: right;
+  }
+
+  .hud-lap-header {
+    font-size: clamp(10px, 2.8vw, 13px);
+    margin-bottom: 1px;
+  }
+
+  .hud-lap-timer {
+    font-size: clamp(15px, 4.4vw, 20.5px);
+    line-height: 1.02;
+  }
+
+  .hud-lap-split {
+    font-size: clamp(8.5px, 2.3vw, 11px);
+    margin-top: 2px;
+  }
+
+  /* Welcome & Controls Modal Optimized for 9:16 Mobile Viewport */
+  .welcome-dialog-card {
+    width: min(92vw, 384px);
+    max-height: 90dvh;
+    overflow-y: auto;
+    padding: 20px 15px 18px;
+    border-radius: 14px;
+  }
+
+  .welcome-eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    margin-bottom: 3px;
+  }
+
+  .welcome-title {
+    font-size: clamp(24px, 7vw, 31px);
+    letter-spacing: 0.05em;
+    margin-bottom: 14px;
+  }
+
+  .welcome-controls-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .welcome-control-block {
+    padding: 11px 10px 10px;
+    border-radius: 9px;
+  }
+
+  .welcome-control-label {
+    font-size: 10.5px;
+    letter-spacing: 0.09em;
+    margin-bottom: 8px;
+  }
+
+  /* 3-Column Compact Tile Row for WASD Controls */
+  .control-keys-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    padding: 0;
+  }
+
+  .control-key-row {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 4px 6px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 7px;
+    font-size: clamp(8.5px, 2.4vw, 10px);
+    letter-spacing: 0.04em;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .control-kbd-pair {
+    min-width: 0;
+    gap: 4px;
+  }
+
+  .welcome-key {
+    min-width: 26px;
+    height: 24px;
+    padding: 0 6px;
+    font-size: 11.5px;
+  }
+
+  /* 2x2 Touch-Friendly Grid for Camera Views 1-4 */
+  .cam-keys-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    padding: 0;
+  }
+
+  .cam-key-row {
+    min-height: 38px;
+    padding: 5px 7px;
+    gap: 6px;
+    font-size: clamp(8.8px, 2.45vw, 10.5px);
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    background: rgba(255, 255, 255, 0.025);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .welcome-key-cyan {
+    min-width: 22px;
+    height: 22px;
+    padding: 0 5px;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+
+  .welcome-start-btn {
+    width: 100%;
+    padding: 12px 16px;
+    gap: 10px;
+    transform: skewX(-8deg);
+  }
+
+  .welcome-start-btn:hover {
+    transform: skewX(-8deg) translateY(-1px) scale(1.01);
+  }
+
+  .welcome-start-text {
+    font-size: clamp(14px, 4.1vw, 17px);
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
+
+  .welcome-enter-kbd {
+    font-size: 10px;
+    padding: 3px 7px;
+    white-space: nowrap;
+  }
+
+  /* F1 Countdown & Finish Overlay in 9:16 Mobile View */
+  .hud-f1-countdown {
+    font-size: clamp(64px, 18vw, 84px);
+  }
+
+  .finish-dialog-card {
+    width: min(92vw, 370px);
+    padding: 22px 16px 18px;
+  }
+
+  .hud-finish-title {
+    font-size: clamp(28px, 7.5vw, 36px);
+  }
+
+  .hud-finish-time {
+    font-size: clamp(40px, 11vw, 52px);
+  }
+
+  .hud-finish-sub {
+    font-size: 11px;
+    margin-bottom: 16px;
+  }
+
+  .finish-actions-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .finish-action-btn {
+    width: 100%;
+    padding: 11px 16px;
+  }
+
+  .finish-action-btn .welcome-start-text {
+    font-size: clamp(13.5px, 3.8vw, 15.5px);
+  }
+
+  /* Bottom Row Mobile Touch Controls: Steer Left/Right (A/D) on Left, Accelerate/Brake (W/S) on Right */
+  .mobile-touch-controls:not(.hidden) {
+    display: flex !important;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: max(20px, env(safe-area-inset-bottom, 20px));
+    padding: 0 12px;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 25;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+  }
+
+  .mobile-touch-controls.hidden {
+    display: none !important;
+  }
+
+  .mobile-ctrl-cluster {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    pointer-events: auto;
+    touch-action: none;
+  }
+
+  .mobile-ctrl-btn {
+    position: relative;
+    width: clamp(64px, 18.8vw, 82px);
+    height: clamp(54px, 14.8vw, 66px);
+    padding: 0;
+    border-radius: 12px;
+    background: linear-gradient(
+      180deg,
+      rgba(16, 24, 42, 0.84) 0%,
+      rgba(8, 13, 24, 0.92) 100%
+    );
+    border: 1.5px solid rgba(255, 255, 255, 0.22);
+    box-shadow:
+      0 6px 18px rgba(0, 0, 0, 0.65),
+      inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: #f4f7ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      transform 0.06s ease,
+      background 0.08s ease,
+      border-color 0.08s ease,
+      box-shadow 0.08s ease,
+      color 0.08s ease;
+  }
+
+  .mobile-ctrl-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    pointer-events: none;
+  }
+
+  .mobile-ctrl-svg {
+    width: clamp(22px, 6.2vw, 27px);
+    height: clamp(22px, 6.2vw, 27px);
+    stroke: currentColor;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+  }
+
+  .mobile-ctrl-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(8.5px, 2.3vw, 10px);
+    font-weight: 800;
+    font-style: italic;
+    letter-spacing: 0.08em;
+    line-height: 1;
+    color: rgba(235, 243, 255, 0.88);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+  }
+
+  /* Left/Right Steer Buttons (A / D) */
+  .mobile-ctrl-steer {
+    border-color: rgba(255, 210, 125, 0.34);
+    color: #ffe2a8;
+  }
+
+  .mobile-ctrl-steer.is-pressed {
+    background: linear-gradient(
+      180deg,
+      rgba(255, 190, 76, 0.38) 0%,
+      rgba(255, 138, 36, 0.24) 100%
+    );
+    border-color: rgba(255, 214, 130, 0.96);
+    color: #ffffff;
+    box-shadow:
+      0 0 18px rgba(255, 180, 60, 0.48),
+      inset 0 1px 0 rgba(255, 255, 255, 0.38);
+    transform: translateY(1.5px) scale(0.95);
+  }
+
+  /* Accelerate Button (W) */
+  .mobile-ctrl-accel {
+    border-color: rgba(56, 232, 255, 0.40);
+    color: #64f0ff;
+  }
+
+  .mobile-ctrl-accel.is-pressed {
+    background: linear-gradient(
+      180deg,
+      rgba(0, 216, 255, 0.40) 0%,
+      rgba(0, 140, 210, 0.26) 100%
+    );
+    border-color: rgba(110, 245, 255, 0.98);
+    color: #ffffff;
+    box-shadow:
+      0 0 20px rgba(0, 224, 255, 0.52),
+      inset 0 1px 0 rgba(255, 255, 255, 0.42);
+    transform: translateY(1.5px) scale(0.95);
+  }
+
+  /* Brake Button (S) */
+  .mobile-ctrl-brake {
+    border-color: rgba(255, 110, 98, 0.38);
+    color: #ff8e85;
+  }
+
+  .mobile-ctrl-brake.is-pressed {
+    background: linear-gradient(
+      180deg,
+      rgba(255, 82, 68, 0.42) 0%,
+      rgba(195, 34, 30, 0.28) 100%
+    );
+    border-color: rgba(255, 136, 126, 0.98);
+    color: #ffffff;
+    box-shadow:
+      0 0 20px rgba(255, 82, 68, 0.52),
+      inset 0 1px 0 rgba(255, 255, 255, 0.38);
+    transform: translateY(1.5px) scale(0.95);
+  }
+
+  .mobile-ctrl-btn.is-pressed .mobile-ctrl-label {
+    color: #ffffff;
+  }
+}
+

@@ -1,0 +1,7 @@
+FROM node:20-slim
+
+RUN mkdir -p /userdata/db /userdata/uploads
+
+VOLUME ["/userdata/db", "/userdata/uploads"]
+
+CMD ["sh", "-c", "trap : TERM INT; while true; do sleep 3600; done"]

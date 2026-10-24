@@ -1,0 +1,89 @@
+/* LAN Messenger · refreshed interface, served locally for LAN use. */
+:root {
+ --bg-primary:#0b111b; --bg-secondary:#101925; --bg-tertiary:#192637;
+ --bg-chat:#0c1420; --bg-hover:#213246; --bg-active:#1b3441;
+ --bg-message-out:#125e53; --bg-message-in:#1c2b3d;
+ --bg-input:#172536; --bg-modal:#142131; --border:#26384c;
+ --text-primary:#edf4fc; --text-secondary:#9db1c8; --text-muted:#7c93ac;
+ --accent:#45d6b3; --accent-hover:#6be5c7; --accent-light:#45d6b31a;
+ --accent-gradient:linear-gradient(125deg,#33c8a4,#38aac8);
+ --radius-md:14px; --radius-lg:20px;
+ --font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+button,input,textarea,summary { -webkit-tap-highlight-color:transparent; }
+button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,textarea:focus-visible {outline:2px solid var(--accent);outline-offset:3px;}
+.ui-icon {width:21px;height:21px;display:inline-block;flex-shrink:0;vertical-align:middle;pointer-events:none;}
+.icon-btn {border-radius:12px;transition:background .15s,transform .15s;}
+.icon-btn:hover {background:var(--bg-hover);transform:translateY(-1px);}
+.sidebar {border-right:1px solid var(--border);background:var(--bg-secondary);}
+.sidebar-header,.chat-header {background:var(--bg-secondary);border-bottom:1px solid var(--border);min-height:74px;}
+.sidebar-nav {margin:10px 16px;padding:4px;border:1px solid var(--border);border-radius:14px;gap:4px;background:var(--bg-primary);}
+.sidebar-nav .nav-item {border:0!important;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:8px;}
+.sidebar-nav .nav-item.active {background:var(--accent-light);color:var(--accent);}
+.sidebar-search {padding:10px 16px 16px;}
+.search-box {border:1px solid var(--border);background:var(--bg-primary);border-radius:12px;}
+.chat-item {margin:4px 9px;border-radius:14px;border-bottom:0;}
+.chat-item.active {box-shadow:inset 3px 0 var(--accent);}
+.avatar {box-shadow:0 0 0 3px #ffffff08;}
+.message-input-area {background:var(--bg-secondary);border-top:1px solid var(--border);padding:14px 18px;}
+.message {border-radius:16px;box-shadow:0 2px 6px #00000012;}
+.message-content {line-height:1.55;}
+.dropdown-menu {border:1px solid var(--border);border-radius:14px;padding:6px;box-shadow:0 16px 48px #0006;}
+.dropdown-item {border-radius:9px;}
+.auth-container {border:1px solid var(--border);background:var(--bg-secondary);box-shadow:0 24px 100px #0006;}
+#auth-screen {background:radial-gradient(ellipse at 20% 10%,#13372f,transparent 60%),var(--bg-primary);}
+.auth-logo .logo-icon {width:68px;height:68px;border-radius:20px;background:var(--accent-gradient);color:#08241d;display:grid;place-items:center;margin:0 auto 22px;}
+.auth-logo .logo-icon .ui-icon {width:34px;height:34px;}
+.auth-logo p {color:var(--text-secondary);}
+.auth-btn {color:#06271e;font-weight:750;min-height:46px;border-radius:12px;}
+.form-input {border:1px solid var(--border);border-radius:12px;background:var(--bg-primary);}
+.welcome-screen {background:radial-gradient(ellipse at center,#12322f55,transparent 70%);}
+.welcome-screen h2 {font-size:36px;letter-spacing:-1.2px;}
+.welcome-screen>p {line-height:1.8;max-width:440px;}
+.welcome-icon {color:var(--accent);opacity:.2;}
+.welcome-feature {border:1px solid var(--border);border-radius:14px;padding:14px 20px;background:var(--bg-secondary);}
+.modal-content,.game-container {border:1px solid var(--border);border-radius:22px;box-shadow:0 24px 100px #0007;}
+.game-select-option {border:1px solid var(--border);border-radius:16px;transition:transform .15s,border-color .15s;}
+.game-select-option:hover {transform:translateY(-3px);border-color:var(--accent);}
+.ludo-container {background:linear-gradient(145deg,#172738,#101a28);padding:20px!important;}
+#ludo-overlay {overflow:auto;padding:16px;align-items:flex-start;}
+#ludo-overlay .ludo-container {margin:auto;max-height:calc(100dvh - 32px);overflow:auto;flex-shrink:0;}
+#ludo-canvas {width:min(100%,54dvh,580px);flex-shrink:0;}
+.ludo-scorebar {gap:10px;}
+.ludo-player-card {border:1px solid var(--border);border-radius:14px;padding:12px;background:#0d1724;}
+.ludo-player-card.active {border-color:var(--ludo-color);box-shadow:0 0 0 2px color-mix(in srgb,var(--ludo-color) 25%,transparent);}
+.ludo-status-row {padding:14px;background:var(--bg-primary);border-radius:14px;margin:14px 0;gap:12px;}
+#ludo-roll-btn {min-width:100px;min-height:44px;border-radius:12px;font-weight:750;background:var(--accent);color:#08241d;}
+#ludo-canvas {border-radius:18px;box-shadow:0 8px 32px #0004;touch-action:manipulation;}
+.ludo-rules {font-size:13px;color:var(--text-secondary);line-height:1.7;margin-top:12px;border-top:1px solid var(--border);padding-top:12px;}
+.ludo-rules summary {cursor:pointer;color:var(--accent);padding:4px;}
+.ludo-legal-moves {display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:12px;}
+.ludo-legal-moves button {padding:10px 14px;min-height:42px;border:1px solid var(--accent);border-radius:10px;background:var(--accent-light);color:var(--accent);cursor:pointer;}
+.arcade-launch {display:flex;align-items:center;gap:7px;border:1px solid var(--border);background:var(--bg-tertiary);color:var(--text-primary);padding:9px 12px;border-radius:12px;cursor:pointer;font-size:12px;font-weight:650;}
+.sidebar-header .user-info {min-width:0;flex:1;}
+.sidebar-header .user-name {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sidebar-header .header-actions {flex-shrink:0;gap:3px;}
+.sidebar-header .arcade-launch {padding:8px;}
+.sidebar-header .arcade-launch span {display:none;}
+.welcome-icon {width:100px;height:100px;margin-bottom:32px;opacity:1;color:var(--accent);padding:24px;background:var(--accent-light);border:1px solid var(--border);border-radius:30px;}
+.arcade-dialog {margin:auto;padding:0;width:min(600px,calc(100vw - 24px));max-height:92dvh;overflow:auto;background:var(--bg-secondary);color:var(--text-primary);border:1px solid var(--border);border-radius:22px;box-shadow:0 24px 90px #0008;}
+.arcade-dialog::backdrop {background:#030913bf;backdrop-filter:blur(5px);}
+.arcade-header {display:flex;justify-content:space-between;align-items:center;padding:22px 24px;border-bottom:1px solid var(--border);}
+.arcade-header h2 {font-size:21px;letter-spacing:-.5px;}
+.arcade-body {padding:24px;}
+.arcade-intro {color:var(--text-secondary);line-height:1.7;margin-bottom:20px;}
+.arcade-grid {display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.arcade-tile {text-align:left;border:1px solid var(--border);background:linear-gradient(140deg,#1a3241,#142131);color:var(--text-primary);padding:22px;border-radius:18px;cursor:pointer;}
+.arcade-tile:hover {border-color:var(--accent);}
+.arcade-tile strong {display:block;font-size:19px;margin:14px 0 8px;}
+.arcade-tile small {line-height:1.6;color:var(--text-secondary);}
+.arcade-actions {display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0;}
+.arcade-actions button,.arcade-pad button {background:var(--bg-tertiary);color:var(--text-primary);border:1px solid var(--border);padding:10px 15px;border-radius:10px;cursor:pointer;min-height:44px;}
+.arcade-board {display:grid;grid-template-columns:repeat(9,1fr);gap:3px;}
+.arcade-board button {aspect-ratio:1;background:var(--bg-tertiary);color:var(--accent);border-radius:6px;font-size:17px;font-weight:800;cursor:pointer;}
+.arcade-board button.revealed {background:var(--bg-primary);border:1px solid var(--border);cursor:default;}
+.arcade-snake {display:block;width:100%;aspect-ratio:1;border:1px solid var(--border);border-radius:16px;background:var(--bg-primary);touch-action:none;}
+.arcade-pad {display:flex;justify-content:center;gap:8px;margin-top:12px;}
+.arcade-status {font-size:14px;color:var(--accent);line-height:1.6;margin-bottom:12px;min-height:24px;}
+@media(max-width:600px) {.sidebar-header,.chat-header{min-height:64px}.arcade-grid{grid-template-columns:1fr}.arcade-body{padding:16px}.welcome-screen h2{font-size:28px}.ludo-container{padding:10px!important}.arcade-launch span{display:none}.ludo-player-card{padding:8px;font-size:12px}}
+@media(prefers-reduced-motion:reduce) {*{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}

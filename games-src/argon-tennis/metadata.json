@@ -1,0 +1,8 @@
+{
+  "name": "Argon Tennis",
+  "description": "3D arcade tennis game with frantic racket kinematics, expressive Mii characters, webcam & phone motion controls, and Lyria 3 audio.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": []
+}

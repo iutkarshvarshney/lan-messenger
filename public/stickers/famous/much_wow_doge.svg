@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E53935"/><stop offset="100%" style="stop-color:#FF5722"/>
+    </linearGradient>
+    <filter id="s"><feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.4"/></filter>
+  </defs>
+  <rect width="200" height="200" rx="20" fill="url(#bg)"/>
+  <rect x="4" y="4" width="192" height="192" rx="18" fill="none" stroke="#FFAB40" stroke-width="2"/>
+  <!-- Dog face (Doge) -->
+  <ellipse cx="100" cy="65" rx="40" ry="38" fill="#F0C070" stroke="#D4A030" stroke-width="2"/>
+  <!-- Inner face -->
+  <ellipse cx="100" cy="72" rx="28" ry="25" fill="#FDD990"/>
+  <!-- Eyes -->
+  <ellipse cx="85" cy="58" rx="6" ry="7" fill="#fff" stroke="#333" stroke-width="1"/>
+  <ellipse cx="115" cy="58" rx="6" ry="7" fill="#fff" stroke="#333" stroke-width="1"/>
+  <circle cx="85" cy="60" r="3.5" fill="#333"/><circle cx="115" cy="60" r="3.5" fill="#333"/>
+  <circle cx="86" cy="58" r="1.5" fill="#fff"/><circle cx="116" cy="58" r="1.5" fill="#fff"/>
+  <!-- Nose -->
+  <ellipse cx="100" cy="72" rx="5" ry="4" fill="#333"/>
+  <!-- Mouth -->
+  <line x1="100" y1="76" x2="100" y2="82" stroke="#333" stroke-width="1.5"/>
+  <path d="M 92 82 Q 100 88 108 82" fill="none" stroke="#333" stroke-width="1.5"/>
+  <!-- Tongue -->
+  <ellipse cx="100" cy="88" rx="5" ry="4" fill="#FF8A80" stroke="#E57373" stroke-width="1"/>
+  <!-- Ears -->
+  <path d="M 62 45 L 55 18 L 78 40" fill="#D4A030" stroke="#B8860B" stroke-width="1.5"/>
+  <path d="M 138 45 L 145 18 L 122 40" fill="#D4A030" stroke="#B8860B" stroke-width="1.5"/>
+  <!-- Wow text scattered around -->
+  <text x="22" y="35" font-family="Comic Sans MS,cursive" font-size="11" fill="#FFEB3B" transform="rotate(-15,22,35)" font-weight="bold">such wow</text>
+  <text x="135" y="30" font-family="Comic Sans MS,cursive" font-size="10" fill="#69F0AE" font-weight="bold">much cool</text>
+  <text x="15" y="110" font-family="Comic Sans MS,cursive" font-size="10" fill="#FF80AB" font-weight="bold">very meme</text>
+  <text x="145" y="105" font-family="Comic Sans MS,cursive" font-size="9" fill="#40C4FF" font-weight="bold">so amaze</text>
+  <text x="100" y="135" text-anchor="middle" font-family="Impact,sans-serif" font-size="20" font-weight="900" fill="#fff" filter="url(#s)">MUCH WOW</text>
+  <text x="100" y="160" text-anchor="middle" font-family="Impact,sans-serif" font-size="14" font-weight="900" fill="#FFEB3B" filter="url(#s)">SUCH DOGE 🐕</text>
+</svg>

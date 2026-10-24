@@ -1,0 +1,6 @@
+{
+  "name": "Desk Racer",
+  "description": "Miniature desk coaster time-trial racing game in Three.js",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

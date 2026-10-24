@@ -1,0 +1,67 @@
+version: '3.8'
+
+# ─────────────────────────────────────────────────────────────
+#  LAN Messenger — Docker Compose
+#
+#  Two services:
+#    db   → Lightweight data-only container.  Owns the named
+#            volumes for SQLite database, uploads, and TLS certs.
+#            Survives app container rebuilds/updates.
+#    app  → Node.js application.  Mounts volumes from `db`.
+#            Rebuild or replace this image freely; user data is safe.
+#
+#  Ports:
+#    3000  → HTTP  (auto-redirects LAN browsers to HTTPS)
+#    3443  → HTTPS (required for voice calls / getUserMedia)
+# ─────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Data container ──────────────────────────────────────────
+  db:
+    build:
+      context: .
+      dockerfile: Dockerfile.db
+    image: lan-messenger-db:latest
+    container_name: lan-messenger-db
+    restart: always
+    volumes:
+      - messenger-db:/userdata/db
+      - messenger-uploads:/userdata/uploads
+      - messenger-certs:/userdata/certs
+
+  # ── Application container ───────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: lan-messenger-app:latest
+    container_name: lan-messenger-app
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - "3000:3000"   # HTTP  (redirects to HTTPS on LAN)
+      - "3443:3443"   # HTTPS (voice calls work here)
+      - "3090:3090"   # Control panel (password changes only)
+    volumes:
+      - messenger-db:/userdata/db
+      - messenger-uploads:/userdata/uploads
+      - messenger-certs:/userdata/certs
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HTTPS_PORT=3443
+      - ADMIN_PORT=3090
+      - SERVER_IP=${SERVER_IP:-}
+      - ADMIN_PANEL_PASSWORD=${ADMIN_PANEL_PASSWORD:?Set ADMIN_PANEL_PASSWORD in .env}
+      - JWT_SECRET=${JWT_SECRET:?Set JWT_SECRET in .env}
+      - DB_PATH=/userdata/db/messenger.db
+      - UPLOAD_DIR=/userdata/uploads
+      - CERT_DIR=/userdata/certs
+
+# ── Named volumes (persistent across container rebuilds) ──────
+volumes:
+  messenger-db:
+  messenger-uploads:
+  messenger-certs:

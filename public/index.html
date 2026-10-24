@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="LAN Messenger — Secure peer-to-peer and group messaging for your local network">
+    <title>LAN Messenger</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/refresh.css">
+    <link rel="stylesheet" href="/native/lan-messenger-native-ui.css">
+    <link rel="stylesheet" href="/css/connect.css">
+    <link rel="stylesheet" href="/css/game-layout.css">
+    <link rel="stylesheet" href="/css/account-security.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20261023-edge">
+    <meta name="theme-color" content="#0f1b28">
+</head>
+<body>
+    <!-- ═══ AUTH SCREEN ═══ -->
+    <div id="auth-screen" style="display:none;">
+        <div class="auth-container">
+            <div class="auth-logo">
+                <div class="logo-icon">💬</div>
+                <h1>LAN Messenger</h1>
+                <p>Connect with your local network</p>
+            </div>
+
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-tab="login" id="login-tab">Login</button>
+                <button class="auth-tab" data-tab="register" id="register-tab">Register</button>
+            </div>
+
+            <div class="auth-error" id="auth-error"></div>
+
+            <!-- Login Form -->
+            <form class="auth-form" id="login-form">
+                <div class="form-group">
+                    <label for="login-username">Username</label>
+                    <input type="text" id="login-username" class="form-input" placeholder="Enter your username" autocomplete="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" class="form-input" placeholder="Enter your password" autocomplete="current-password" required>
+                </div>
+                <div class="auth-extra">
+                    <button type="button" class="text-btn" id="forgot-password-link">Forgot Password?</button>
+                </div>
+                <button type="submit" class="auth-btn" id="login-btn">Sign In</button>
+            </form>
+
+            <!-- Reset Password Form -->
+            <form class="auth-form" id="reset-form" style="display:none;">
+                <p class="form-description" id="recovery-description">Use a private recovery code you saved from Account security. Codes work from any device and are not tied to the server IP.</p>
+                <div class="form-group" id="recovery-username-field">
+                    <label for="reset-username">Username</label>
+                    <input type="text" id="reset-username" class="form-input" autocomplete="username" maxlength="128" required>
+                </div>
+                <div class="form-group" id="recovery-code-field">
+                    <label for="reset-recovery-code">Saved recovery code</label>
+                    <input type="password" id="reset-recovery-code" class="form-input" autocomplete="off" spellcheck="false" maxlength="128" required>
+                </div>
+                <div id="recovery-password-fields" hidden>
+                    <p id="recovery-countdown" role="status"></p>
+                    <div class="form-group">
+                        <label for="reset-new-password">New password</label>
+                        <input type="password" id="reset-new-password" class="form-input" autocomplete="new-password" minlength="12" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label for="reset-confirm-password">Confirm new password</label>
+                        <input type="password" id="reset-confirm-password" class="form-input" autocomplete="new-password" minlength="12" disabled>
+                    </div>
+                </div>
+                <button type="submit" class="auth-btn" id="reset-btn">Verify recovery code</button>
+                <button type="button" class="btn btn-secondary auth-back-btn" id="back-to-login">Back to Login</button>
+            </form>
+
+            <!-- Temporary Password Change Form -->
+            <form class="auth-form" id="temp-password-form" style="display:none;">
+                <p class="form-description">Your temporary password worked. Please set your own new password to continue.</p>
+                <div class="form-group">
+                    <label for="temp-new-password">New Password</label>
+                    <input type="password" id="temp-new-password" class="form-input" placeholder="Enter new password (min 4 chars)" autocomplete="new-password" required>
+                </div>
+                <div class="form-group">
+                    <label for="temp-confirm-password">Confirm New Password</label>
+                    <input type="password" id="temp-confirm-password" class="form-input" placeholder="Confirm new password" autocomplete="new-password" required>
+                </div>
+                <button type="submit" class="auth-btn" id="temp-password-btn">Update Password</button>
+            </form>
+
+            <!-- Register Form -->
+            <form class="auth-form" id="register-form" style="display:none;">
+                <div class="form-group">
+                    <label for="reg-display-name">Display Name</label>
+                    <input type="text" id="reg-display-name" class="form-input" placeholder="Your full name" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-username">Username</label>
+                    <input type="text" id="reg-username" class="form-input" placeholder="Choose a username (min 3 chars)" autocomplete="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-password">Password</label>
+                    <input type="password" id="reg-password" class="form-input" placeholder="Choose a password (min 4 chars)" autocomplete="new-password" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-avatar">Profile Picture (Optional)</label>
+                    <input type="file" id="reg-avatar" class="form-input" accept="image/*">
+                </div>
+                <button type="submit" class="auth-btn" id="register-btn">Create Account</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ═══ MAIN APP ═══ -->
+    <div id="app-screen">
+        <div class="app-wrapper">
+            <!-- ─── Sidebar ─── -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <div class="user-info" id="sidebar-user-info">
+                        <div class="avatar" id="sidebar-avatar"></div>
+                        <span class="user-name" id="sidebar-user-name"></span>
+                        <span id="total-unread-badge" class="total-unread-badge" style="display:none;">0</span>
+                    </div>
+                    <div class="header-actions">
+                        <button class="icon-btn" id="new-group-btn" title="New Group">👥</button>
+                        <button class="icon-btn" id="new-chat-btn" title="New Chat">💬</button>
+                        <div class="dropdown">
+                            <button class="icon-btn" id="menu-btn" title="Menu" aria-haspopup="menu" aria-expanded="false" aria-controls="main-menu">⋮</button>
+                            <div class="dropdown-menu" id="main-menu" role="menu" aria-label="Workspace menu">
+                                <div class="workspace-menu-heading">YOUR WORKSPACE</div>
+                                <button type="button" class="dropdown-item" id="menu-profile" role="menuitem" aria-label="Profile"><span class="menu-icon" data-ui-icon="user"></span><span class="menu-copy"><strong>Profile</strong><small>Manage your details</small></span></button>
+                                <button type="button" class="dropdown-item" id="menu-new-group" role="menuitem" aria-label="New Group"><span class="menu-icon" data-ui-icon="users"></span><span class="menu-copy"><strong>New group</strong><small>Bring your team together</small></span></button>
+                                <button type="button" class="dropdown-item" id="menu-security" role="menuitem" aria-label="Account security"><span class="menu-icon" data-ui-icon="shield"></span><span class="menu-copy"><strong>Account security</strong><small>Save private recovery codes</small></span></button>
+                                <div class="workspace-menu-divider" role="separator"></div>
+                                <button type="button" class="dropdown-item danger" id="menu-logout" role="menuitem" aria-label="Logout"><span class="menu-icon" data-ui-icon="logout"></span><span class="menu-copy"><strong>Log out</strong><small>Sign out of this device</small></span></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-nav">
+                    <button class="nav-item active" id="nav-chats" title="Chats">💬 Chats</button>
+                    <button class="nav-item" id="nav-status" title="Status">⭕ Status</button>
+                </div>
+
+                <div class="sidebar-search">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="search-input" placeholder="Search or start new chat">
+                    </div>
+                </div>
+
+                <div class="sidebar-content">
+                    <div class="sidebar-view active" id="view-chats">
+                        <div class="chat-list" id="chat-list">
+                            <!-- Chat items will be rendered here -->
+                        </div>
+                    </div>
+                    
+                    <div class="sidebar-view" id="view-status" style="display: none;">
+                        <div class="status-container">
+                            <div class="status-item my-status" id="add-status-btn">
+                                <div class="status-avatar-wrapper">
+                                    <div class="avatar avatar-lg" id="my-status-avatar"></div>
+                                    <div class="status-add-overlay" id="add-status-media-btn">+</div>
+                                </div>
+                                <div class="status-info">
+                                    <div class="status-name">My Status</div>
+                                    <div class="status-time">Tap to add status update</div>
+                                </div>
+                                <div class="status-actions">
+                                    <button class="status-action-btn" id="view-status-manager-btn" title="View status details" style="display:none;">👁️</button>
+                                    <button class="status-action-btn" id="add-status-text-btn" title="Text status">✏️</button>
+                                    <button class="status-action-btn" id="add-status-plus-btn" title="Add media status" style="font-size: 22px; font-weight: bold;">+</button>
+                                </div>
+                            </div>
+                            <div class="status-label">RECENT UPDATES</div>
+                            <div id="status-list" class="status-list">
+                                <!-- Status updates from others -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- ─── Chat Area ─── -->
+            <main class="chat-area" id="chat-area">
+                <!-- Welcome Screen -->
+                <div class="welcome-screen" id="welcome-screen">
+                    <svg class="welcome-icon" viewBox="0 0 303 172" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M229.565 160.229C262.212 149.245 286.931 118.241 283.39 73.4194C278.009 5.31929 210.551 -7.32568 166.505 8.3987C147.53 15.4801 121.502 29.583 105.022 40.2494C61.7462 67.8537 39.281 64.6918 28.5525 60.7671C8.93397 53.4798 -6.68822 74.2388 3.55373 91.643C16.1679 112.766 50.8007 120.579 72.3636 113.222C93.9265 105.864 107.394 97.9169 126.045 102.554C142.374 106.595 156.725 118.412 161.625 132.094C170.423 156.469 196.931 171.209 229.565 160.229Z" fill="currentColor"/>
+                    </svg>
+                    <h2>LAN Messenger</h2>
+                    <p>Send and receive messages on your local network without any internet connection. Your messages stay private and secure.</p>
+                    <div class="welcome-features">
+                        <div class="welcome-feature">
+                            <div class="welcome-feature-icon">🔒</div>
+                            <span>LAN Private</span>
+                        </div>
+                        <div class="welcome-feature">
+                            <div class="welcome-feature-icon">📎</div>
+                            <span>File Sharing</span>
+                        </div>
+                        <div class="welcome-feature">
+                            <div class="welcome-feature-icon">👥</div>
+                            <span>Group Chats</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Chat View -->
+                <div id="active-chat" style="display:none; flex-direction:column; height:100%;">
+                    <div class="chat-header">
+                        <div class="chat-header-info" id="chat-header-info">
+                            <button class="icon-btn back-btn-mobile" id="back-btn" style="display:none;">←</button>
+                            <div class="avatar" id="chat-avatar"></div>
+                            <div class="chat-header-details" role="button" tabindex="0" aria-label="Open conversation details" title="View conversation details">
+                                <div class="chat-header-name">
+                                    <span id="chat-name"></span>
+                                    <span class="e2e-badge" id="e2e-badge" style="display:none;" title="End-to-end encrypted"><span data-ui-icon="lock"></span></span>
+                                    <span class="contact-details-chevron" data-ui-icon="chevron" aria-hidden="true"></span>
+                                </div>
+                                <div class="chat-header-status" id="chat-status"></div>
+                            </div>
+                            <div class="chat-search-container" id="chat-search-container" style="display:none;">
+                                <input type="text" id="chat-search-input" placeholder="Search in this chat...">
+                                <button class="search-close" id="chat-search-close">✕</button>
+                            </div>
+                        </div>
+                        <div class="header-actions">
+                            <button class="icon-btn" id="game-btn" title="Play Games">🎮</button>
+                            <button class="icon-btn" id="scribble-btn" title="Play Scribble (Group)" style="display:none;">🎨</button>
+                            <button class="icon-btn" id="voice-call-btn" title="Voice call">☎</button>
+                            <button class="icon-btn" id="chat-search-btn" title="Search">🔍</button>
+                            <div class="dropdown">
+                                <button class="icon-btn" id="chat-menu-btn" title="Menu" aria-haspopup="menu" aria-expanded="false" aria-controls="chat-menu">⋮</button>
+                                <div class="dropdown-menu" id="chat-menu" role="menu" aria-label="Conversation menu">
+                                    <div class="workspace-menu-heading">CONVERSATION</div>
+                                    <button type="button" class="dropdown-item" id="chat-menu-info" role="menuitem" aria-label="Info"><span class="menu-icon" data-ui-icon="info"></span><span class="menu-copy"><strong>Contact info</strong><small>View details and status</small></span></button>
+                                    <button type="button" class="dropdown-item" id="chat-menu-select" role="menuitem" aria-label="Select Messages"><span class="menu-icon" data-ui-icon="check"></span><span class="menu-copy"><strong>Select messages</strong><small>Forward or manage messages</small></span></button>
+                                    <div class="workspace-menu-divider" role="separator"></div>
+                                    <button type="button" class="dropdown-item danger" id="chat-menu-clear" role="menuitem" aria-label="Clear Chat"><span class="menu-icon" data-ui-icon="trash"></span><span class="menu-copy"><strong>Clear chat</strong><small>Remove this conversation’s messages</small></span></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="messages-container" id="messages-container">
+                        <!-- Messages render here -->
+                    </div>
+
+                    <!-- Selection Bar -->
+                    <div class="selection-bar" id="selection-bar" style="display:none;">
+                        <div class="selection-info">
+                            <button class="icon-btn" id="close-selection-btn">✕</button>
+                            <span id="selection-count">0 selected</span>
+                        </div>
+                        <div class="selection-actions">
+                            <button class="icon-btn" id="forward-selected-btn" title="Forward selected">➡️</button>
+                            <button class="icon-btn danger" id="delete-selected-btn" title="Delete selected">🗑️</button>
+                        </div>
+                    </div>
+
+                    <!-- Reply Preview -->
+                    <div class="reply-preview-bar" id="reply-preview-bar">
+                        <div class="reply-indicator"></div>
+                        <div class="reply-content">
+                            <div class="reply-sender" id="reply-sender-name"></div>
+                            <div class="reply-msg-text" id="reply-msg-text"></div>
+                        </div>
+                        <button class="reply-close" id="reply-close-btn">✕</button>
+                    </div>
+
+                    <!-- Multiple Files Preview -->
+                    <div class="multi-file-preview" id="multi-file-preview">
+                        <div class="preview-header">
+                            <span id="preview-count">0 files selected</span>
+                            <button class="icon-btn" id="clear-all-previews">🗑️ Clear All</button>
+                        </div>
+                        <div class="preview-list" id="preview-list">
+                            <!-- Preview items will be added here -->
+                        </div>
+                        <div class="upload-progress" id="upload-progress">
+                            <div class="upload-progress-bar" id="upload-progress-bar"></div>
+                        </div>
+                    </div>
+
+                    <div class="drag-drop-overlay" id="drag-drop-overlay">
+                        <div class="drag-drop-content">
+                            <div class="drag-drop-icon">📁</div>
+                            <h3>Drop files to send</h3>
+                            <p>Release to add to queue</p>
+                        </div>
+                    </div>
+
+                    <!-- Emoji Picker -->
+                    <div class="emoji-picker" id="emoji-picker">
+                        <div class="emoji-picker-header">
+                            <div class="emoji-search-box">
+                                <span class="search-icon">🔍</span>
+                                <input type="text" id="emoji-search" placeholder="Search emojis...">
+                            </div>
+                            <div class="emoji-categories" id="emoji-categories">
+                                <button class="emoji-cat-btn active" data-category="smileys" title="Smileys">😊</button>
+                                <button class="emoji-cat-btn" data-category="people" title="People">👋</button>
+                                <button class="emoji-cat-btn" data-category="animals" title="Animals">🐶</button>
+                                <button class="emoji-cat-btn" data-category="food" title="Food">🍕</button>
+                                <button class="emoji-cat-btn" data-category="travel" title="Travel">✈️</button>
+                                <button class="emoji-cat-btn" data-category="activities" title="Activities">⚽</button>
+                                <button class="emoji-cat-btn" data-category="objects" title="Objects">💡</button>
+                                <button class="emoji-cat-btn" data-category="symbols" title="Symbols">❤️</button>
+                                <button class="emoji-cat-btn" data-category="flags" title="Flags">🏁</button>
+                            </div>
+                        </div>
+                        <div class="emoji-picker-body" id="emoji-picker-body">
+                            <div class="emoji-category-label" id="emoji-category-label">Smileys & Emotion</div>
+                            <div class="emoji-grid" id="emoji-grid">
+                                <!-- Emojis render here -->
+                            </div>
+                        </div>
+                        <div class="emoji-picker-footer">
+                            <div class="emoji-recent-label" id="emoji-recent-label">Recently Used</div>
+                            <div class="emoji-recent" id="emoji-recent"></div>
+                        </div>
+                    </div>
+
+                    <!-- Sticker Picker -->
+                    <div class="sticker-picker" id="sticker-picker">
+                        <div class="sticker-picker-header">
+                            <span class="sticker-picker-title">🎭 Stickers</span>
+                            <div class="sticker-tab-bar" id="sticker-tab-bar"></div>
+                        </div>
+                        <div class="sticker-picker-body" id="sticker-picker-body"></div>
+                    </div>
+
+                    <div class="voice-recording-ui" id="voice-recording-ui">
+                        <div class="recording-dot"></div>
+                        <div class="recording-timer" id="recording-timer">00:00</div>
+                        <div class="recording-visualizer" id="recording-visualizer">
+                            <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                        </div>
+                        <div class="recording-status">Recording...</div>
+                    </div>
+
+                    <div class="chat-input-area">
+                        <button class="attach-btn" id="attach-btn" title="Attach file">📎</button>
+                        <button class="attach-btn sticker-btn-alt" id="sticker-toggle-btn" title="Stickers">🎭</button>
+                        <input type="file" id="file-input" style="display:none;" multiple>
+                        <div class="chat-input-wrapper">
+                            <span class="emoji-btn" id="emoji-toggle-btn">😊</span>
+                            <textarea id="message-input" placeholder="Type a message" rows="1"></textarea>
+                        </div>
+                        <div class="input-actions">
+                            <button class="icon-btn voice-btn" id="voice-rec-btn" title="Hold to record">🎙️</button>
+                            <button class="send-btn" id="send-btn" title="Send" style="display:none;">➤</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Panel (slides in from right) -->
+                <div class="profile-panel" id="profile-panel">
+                    <div class="profile-panel-header">
+                        <button class="back-btn" id="close-profile-panel" type="button" aria-label="Close contact info" title="Close contact info"><span data-ui-icon="back"></span></button>
+                        <div class="profile-panel-heading"><span>CONVERSATION DETAILS</span><h3 id="profile-panel-title">Contact Info</h3></div>
+                    </div>
+                    <div class="profile-panel-body" id="profile-panel-body">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- ═══ MODALS ═══ -->
+
+    <!-- New Chat Modal -->
+    <div class="modal-overlay" id="new-chat-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>New Chat</h3>
+                <button class="modal-close" id="close-new-chat">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="search-box" style="margin-bottom: 12px;">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="new-chat-search" placeholder="Search users...">
+                </div>
+                <div class="user-list-modal" id="new-chat-user-list">
+                    <!-- Users render here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Group Modal -->
+    <div class="modal-overlay" id="new-group-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="group-modal-title">Create Group</h3>
+                <button class="modal-close" id="close-new-group">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label>Group Name</label>
+                    <input type="text" id="group-name-input" class="form-input" placeholder="Enter group name">
+                </div>
+                <label style="font-size:13px; font-weight:500; color:var(--text-secondary); margin-bottom:8px; display:block;">Add Members</label>
+                <div class="selected-tags" id="selected-members-tags"></div>
+                <div class="search-box" style="margin-bottom: 12px;">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="group-member-search" placeholder="Search users...">
+                </div>
+                <div class="user-list-modal" id="group-user-list">
+                    <!-- Users render here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancel-group-btn">Cancel</button>
+                <button class="btn btn-primary" id="create-group-btn">Create Group</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Member Modal -->
+    <div class="modal-overlay" id="add-member-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Add Members</h3>
+                <button class="modal-close" id="close-add-member">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="search-box" style="margin-bottom: 12px;">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="add-member-search" placeholder="Search users...">
+                </div>
+                <div class="user-list-modal" id="add-member-user-list">
+                    <!-- Users render here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Profile Modal -->
+    <div class="modal-overlay" id="my-profile-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>My Profile</h3>
+                <button class="modal-close" id="close-my-profile">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="profile-avatar-section">
+                    <div class="avatar" id="my-profile-avatar" style="width:120px;height:120px;font-size:48px;margin:0 auto 16px;cursor:pointer;position:relative;" title="Click to change profile photo"></div>
+                    <input type="file" id="my-profile-avatar-input" accept="image/*" style="display:none;">
+                </div>
+                <div class="form-group" style="margin-bottom:16px;">
+                    <label>Display Name</label>
+                    <input type="text" id="my-display-name" class="form-input" placeholder="Your display name">
+                </div>
+                <div class="form-group" style="margin-bottom:16px;">
+                    <label>Status</label>
+                    <input type="text" id="my-status" class="form-input" placeholder="What's on your mind?">
+                </div>
+                <div class="form-group" style="margin-bottom:16px;">
+                    <label>Permissions</label>
+                    <div class="permission-status" id="mic-permission-status">
+                        <span class="status-icon">🎙️</span>
+                        <span class="status-text">Microphone: Checking...</span>
+                        <button class="btn btn-mini" id="request-mic-btn" style="display:none;">Grant</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancel-profile-btn">Cancel</button>
+                <button class="btn btn-primary" id="save-profile-btn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forward Message Modal -->
+    <div class="modal-overlay" id="forward-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Forward To</h3>
+                <button class="modal-close" id="close-forward-modal">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="search-box" style="margin-bottom: 12px;">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="forward-search" placeholder="Search chats...">
+                </div>
+                <div class="user-list-modal" id="forward-list">
+                    <!-- Conversations render here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Viewer -->
+    <div class="image-viewer" id="image-viewer">
+        <button class="image-viewer-close" id="close-image-viewer">✕</button>
+        <img id="image-viewer-img" src="" alt="Image preview">
+    </div>
+
+    <!-- Tic Tac Toe Game Overlay -->
+    <div class="game-overlay" id="game-overlay" style="display:none;">
+        <div class="game-container">
+            <div class="game-header">
+                <h3>Tic Tac Toe</h3>
+                <button class="game-close" id="close-game-btn">✕</button>
+            </div>
+            <div class="score-card" id="score-card">
+                <div class="score-item">
+                    <span class="score-name" id="score-player1">You</span>
+                    <span class="score-val" id="score-val1">0</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-name">Draws</span>
+                    <span class="score-val" id="score-draws">0</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-name" id="score-player2">Opponent</span>
+                    <span class="score-val" id="score-val2">0</span>
+                </div>
+            </div>
+            <div class="game-status-text" id="game-status-text">Your turn (X)</div>
+            <div class="game-board" id="game-board">
+                <div class="game-cell" data-index="0"></div>
+                <div class="game-cell" data-index="1"></div>
+                <div class="game-cell" data-index="2"></div>
+                <div class="game-cell" data-index="3"></div>
+                <div class="game-cell" data-index="4"></div>
+                <div class="game-cell" data-index="5"></div>
+                <div class="game-cell" data-index="6"></div>
+                <div class="game-cell" data-index="7"></div>
+                <div class="game-cell" data-index="8"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Selection Modal -->
+    <div class="modal-overlay" id="game-selection-modal" style="display:none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Select Game</h3>
+                <button class="modal-close" id="close-game-selection">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Choose Game</label>
+                    <div class="game-choice-buttons">
+                        <button type="button" class="game-select-option" data-game="wizardchess"><span style="font-size:28px;">♞</span><span>Wizard Chess · 3D</span></button>
+                        <button type="button" class="game-select-option" data-game="rallyclub"><span style="font-size:28px;">◉</span><span>Rally Club · Tennis</span></button>
+                        <button type="button" class="game-select-option active" data-game="tictactoe">
+                            <span style="font-size: 28px;">❌</span>
+                            <span>Tic Tac Toe</span>
+                        </button>
+                        <button type="button" class="game-select-option" data-game="dotsandboxes">
+                            <span style="font-size: 28px;">🟪</span>
+                            <span>Dots & Boxes</span>
+                        </button>
+                        <button type="button" class="game-select-option" data-game="connectfour">
+                            <span style="font-size: 28px;">🔴</span>
+                            <span>Connect Four</span>
+                        </button>
+                        <button type="button" class="game-select-option" data-game="rockpaperscissors">
+                            <span style="font-size: 28px;">🖖</span>
+                            <span>RPS Lizard Spock</span>
+                        </button>
+                        <button type="button" class="game-select-option" data-game="memorymatch">
+                            <span style="font-size: 28px;">🧠</span>
+                            <span>Memory Match</span>
+                        </button>
+                        <button type="button" class="game-select-option" data-game="wordscramble">
+                            <span style="font-size: 28px;">🔤</span>
+                            <span>Word Guess · 3 rounds</span>
+                        </button>
+                        <button type="button" class="game-select-option" data-game="retropong">
+                            <span style="font-size: 28px;">🕹️</span>
+                            <span>Retro Pong 77</span>
+                        </button>
+                        <button type="button" class="game-select-option" data-game="stickfight">
+                            <span style="font-size: 28px;">🥊</span>
+                            <span>Street Arena 3D</span>
+                        </button>
+                        <button type="button" class="game-select-option" data-game="ludo">
+                            <span style="font-size: 28px;">🎲</span>
+                            <span>Ludo</span>
+                        </button>
+                        <button type="button" class="game-select-option" data-game="reversi"><span style="font-size:28px;">◉</span><span>Reversi · 2 players</span></button>
+                        <button type="button" class="game-select-option" data-game="gomoku"><span style="font-size:28px;">▦</span><span>Gomoku · 2 players</span></button>
+                    </div>
+                </div>
+                <div class="form-group" id="dots-size-group" style="display: none; margin-top: 20px;">
+                    <label>Grid Size (Boxes)</label>
+                    <div style="display: flex; gap: 8px; margin-top: 8px;">
+                        <button type="button" class="size-select-option active" data-size="4">4 x 4</button>
+                        <button type="button" class="size-select-option" data-size="8">8 x 8</button>
+                        <button type="button" class="size-select-option" data-size="16">16 x 16</button>
+                    </div>
+                </div>
+                <div class="form-group" id="ludo-player-group" style="display: none; margin-top: 20px;">
+                    <label>Players</label>
+                    <div class="ludo-player-select">
+                        <button type="button" class="ludo-player-option active" data-players="4">4</button>
+                        <button type="button" class="ludo-player-option" data-players="2">2</button>
+                        <button type="button" class="ludo-player-option" data-players="3">3</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="margin-top: 20px;">
+                <button class="btn btn-secondary" id="cancel-game-selection">Cancel</button>
+                <button class="btn btn-primary" id="send-game-invite">Send Invite</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dots and Boxes Game Overlay -->
+    <div class="game-overlay" id="dots-overlay" style="display:none;">
+        <div class="game-container" style="width: 580px; max-width: 95vw;">
+            <div class="game-header">
+                <h3>Dots & Boxes</h3>
+                <button class="game-close" id="close-dots-btn">✕</button>
+            </div>
+            <div class="score-card">
+                <div class="score-item" style="border-left: 4px solid #ff5c4d;">
+                    <span class="score-name" id="dots-player1-name">You</span>
+                    <span class="score-val" id="dots-player1-score">0</span>
+                </div>
+                <div class="score-item" style="border-left: 4px solid #53bdeb;">
+                    <span class="score-name" id="dots-player2-name">Opponent</span>
+                    <span class="score-val" id="dots-player2-score">0</span>
+                </div>
+            </div>
+            <div class="game-status-text" id="dots-status-text">Your turn</div>
+            <div class="dots-board-container" style="display: flex; justify-content: center; align-items: center; padding: 12px; background: #202c33; border-radius: 12px; margin-top: 12px;">
+                <canvas id="dots-canvas" width="460" height="460" style="background: #202c33; border-radius: 8px; cursor: pointer;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Connect Four Game Overlay -->
+    <div class="game-overlay" id="connect-overlay" style="display:none;">
+        <div class="game-container connect-container">
+            <div class="game-header">
+                <h3>Connect Four</h3>
+                <button class="game-close" id="close-connect-btn">✕</button>
+            </div>
+            <div class="score-card">
+                <div class="score-item" style="border-left: 4px solid #ff5c4d;">
+                    <span class="score-name" id="connect-player1-name">You</span>
+                    <span class="score-val" id="connect-player1-score">0</span>
+                </div>
+                <div class="score-item" style="border-left: 4px solid #f6c343;">
+                    <span class="score-name" id="connect-player2-name">Opponent</span>
+                    <span class="score-val" id="connect-player2-score">0</span>
+                </div>
+            </div>
+            <div class="game-status-text" id="connect-status-text">Your turn</div>
+            <div class="connect-board" id="connect-board"></div>
+        </div>
+    </div>
+
+    <!-- Rock Paper Scissors Lizard Spock Game Overlay -->
+    <div class="game-overlay" id="rps-overlay" style="display:none;">
+        <div class="game-container rps-container">
+            <div class="game-header">
+                <h3>Rock Paper Scissors Lizard Spock</h3>
+                <button class="game-close" id="close-rps-btn">✕</button>
+            </div>
+            <div class="score-card">
+                <div class="score-item">
+                    <span class="score-name">You</span>
+                    <span class="score-val" id="rps-my-score">0</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-name">Round</span>
+                    <span class="score-val" id="rps-round">1</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-name" id="rps-opponent-name">Opponent</span>
+                    <span class="score-val" id="rps-opponent-score">0</span>
+                </div>
+            </div>
+            <div class="game-status-text" id="rps-status-text">Choose your move</div>
+            <div class="rps-choice-row">
+                <button class="rps-choice" data-choice="rock" title="Rock">✊</button>
+                <button class="rps-choice" data-choice="paper" title="Paper">✋</button>
+                <button class="rps-choice" data-choice="scissors" title="Scissors">✌</button>
+                <button class="rps-choice" data-choice="lizard" title="Lizard">🦎</button>
+                <button class="rps-choice" data-choice="spock" title="Spock">🖖</button>
+            </div>
+            <div class="rps-reveal" id="rps-reveal">
+                <div>
+                    <span class="score-name">You</span>
+                    <strong id="rps-my-choice">?</strong>
+                </div>
+                <div>
+                    <span class="score-name">Opponent</span>
+                    <strong id="rps-opponent-choice">?</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Memory Match Game Overlay -->
+    <div class="game-overlay" id="memory-overlay" style="display:none;">
+        <div class="game-container memory-container">
+            <div class="game-header">
+                <h3>Memory Match</h3>
+                <button class="game-close" id="close-memory-btn">✕</button>
+            </div>
+            <div class="score-card">
+                <div class="score-item">
+                    <span class="score-name">You</span>
+                    <span class="score-val" id="memory-my-score">0</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-name" id="memory-opponent-name">Opponent</span>
+                    <span class="score-val" id="memory-opponent-score">0</span>
+                </div>
+            </div>
+            <div class="game-status-text" id="memory-status-text">Your turn</div>
+            <div class="memory-board" id="memory-board"></div>
+        </div>
+    </div>
+
+    <!-- Word Scramble Game Overlay -->
+    <div class="game-overlay" id="word-overlay" style="display:none;">
+        <div class="game-container word-container">
+            <div class="game-header">
+                <h3>Word Scramble</h3>
+                <button class="game-close" id="close-word-btn">✕</button>
+            </div>
+            <div class="score-card">
+                <div class="score-item">
+                    <span class="score-name">You</span>
+                    <span class="score-val" id="word-my-score">0</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-name">Round</span>
+                    <span class="score-val" id="word-round">1</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-name" id="word-opponent-name">Opponent</span>
+                    <span class="score-val" id="word-opponent-score">0</span>
+                </div>
+            </div>
+            <div class="word-scramble-display" id="word-scramble-display">READY</div>
+            <div class="game-status-text" id="word-status-text">Unscramble the word</div>
+            <div class="word-input-row">
+                <input type="text" id="word-answer-input" placeholder="Type answer">
+                <button class="btn btn-primary" id="word-submit-btn">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3D Fighting Game Overlay -->
+    <div class="game-overlay" id="stickfight-overlay" style="display:none;">
+        <div class="game-container stickfight-container">
+            <div class="game-header">
+                <h3>Street Arena 3D</h3>
+                <button class="game-close" id="close-stickfight-btn">✕</button>
+            </div>
+            <div class="stickfight-hud">
+                <div class="fighter-panel">
+                    <span class="score-name">You</span>
+                    <div class="fight-health"><span id="stickfight-my-health"></span></div>
+                    <div class="fight-meter stamina"><span id="stickfight-my-stamina"></span></div>
+                    <div class="fight-meter super"><span id="stickfight-my-super"></span></div>
+                    <div class="round-pips" id="stickfight-my-rounds"></div>
+                </div>
+                <div class="fighter-panel">
+                    <span class="score-name" id="stickfight-rival-name">Rival</span>
+                    <div class="fight-health"><span id="stickfight-rival-health"></span></div>
+                    <div class="fight-meter stamina"><span id="stickfight-rival-stamina"></span></div>
+                    <div class="fight-meter super"><span id="stickfight-rival-super"></span></div>
+                    <div class="round-pips" id="stickfight-rival-rounds"></div>
+                </div>
+            </div>
+            <div class="stickfight-select" id="stickfight-select">
+                <div class="stickfight-select-header">
+                    <div>
+                        <div class="stickfight-select-title">Choose Your Fighter</div>
+                        <div class="stickfight-select-subtitle" id="stickfight-select-status">Waiting for both players</div>
+                    </div>
+                    <div class="stickfight-round-label" id="stickfight-round-label">Best of 3</div>
+                </div>
+                <div class="stickfight-roster" id="stickfight-roster"></div>
+            </div>
+            <div class="stickfight-fightline">
+                <div class="game-status-text" id="stickfight-status-text">A/D move. W jump. J punch. K kick. I special. L block.</div>
+                <div class="stickfight-combo" id="stickfight-combo">Combo x0</div>
+            </div>
+            <canvas id="stickfight-canvas" width="760" height="420"></canvas>
+            <div class="stickfight-touch-controls">
+                <button type="button" class="stickfight-control" data-key="ArrowLeft">◀</button>
+                <button type="button" class="stickfight-control" data-key="ArrowRight">▶</button>
+                <button type="button" class="stickfight-control" data-key="KeyW">▲</button>
+                <button type="button" class="stickfight-control attack" data-key="KeyJ">Punch</button>
+                <button type="button" class="stickfight-control attack" data-key="KeyK">Kick</button>
+                <button type="button" class="stickfight-control special" data-key="KeyI">Special</button>
+                <button type="button" class="stickfight-control" data-key="KeyL">Block</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Retro Pong Game Overlay -->
+    <div class="game-overlay" id="retropong-overlay" style="display:none;">
+        <div class="game-container retropong-container">
+            <div class="game-header">
+                <h3>Retro Pong 77</h3>
+                <button class="game-close" id="close-retropong-btn">✕</button>
+            </div>
+            <div class="retropong-scorebar">
+                <div class="retropong-player">
+                    <span>You</span>
+                    <strong id="retropong-my-score">0</strong>
+                </div>
+                <div class="retropong-status" id="retropong-status">First to 7</div>
+                <div class="retropong-player">
+                    <span id="retropong-rival-name">Rival</span>
+                    <strong id="retropong-rival-score">0</strong>
+                </div>
+            </div>
+            <canvas id="retropong-canvas" width="720" height="420"></canvas>
+            <div class="retropong-touch-controls">
+                <button type="button" class="retropong-control" data-key="up">▲</button>
+                <button type="button" class="retropong-control" data-key="down">▼</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ludo Game Overlay -->
+    <div class="game-overlay" id="ludo-overlay" style="display:none;">
+        <div class="game-container ludo-container">
+            <div class="game-header">
+                <h3>Ludo</h3>
+                <button class="icon-btn" id="minimise-ludo-btn" title="Minimise game" aria-label="Minimise Ludo">−</button><button class="game-close" id="close-ludo-btn">✕</button>
+            </div>
+            <div class="ludo-table">
+                <div class="ludo-scorebar" id="ludo-scorebar"></div>
+                <canvas id="ludo-canvas" width="720" height="720"></canvas>
+            </div>
+            <div class="ludo-status-row">
+                <div id="ludo-dice"></div>
+                <div class="game-status-text" id="ludo-status-text">Waiting for turn</div>
+                <button class="btn btn-primary" id="ludo-roll-btn">Roll</button>
+            </div>
+            <div id="ludo-legal-moves" class="ludo-legal-moves" aria-label="Available token moves"></div>
+            <div id="ludo-notice" class="ludo-hint" role="status" aria-live="polite"></div>
+            <div class="ludo-hint" id="ludo-hint">Roll a 6 to bring a token out.</div>
+            <details class="ludo-rules"><summary>How to play · Classic rules</summary><p>Roll six to leave base. Sixes, captures and exact home finishes award another roll. The third consecutive six ends your turn. Stars and coloured starts are safe. Two tokens of one colour protect each other but do not block passage. Home lanes allow passing. Bring all four tokens home to win.</p></details>
+        </div>
+    </div>
+
+    <!-- Incoming Game Request -->
+    <div class="game-request-toast" id="game-request-toast" style="display:none;">
+        <div class="request-content">
+            <span class="request-icon">🎮</span>
+            <div class="request-info">
+                <div class="request-title" id="game-request-title">Game Request</div>
+                <div class="request-msg" id="game-request-msg">wants to play Tic Tac Toe</div>
+            </div>
+        </div>
+        <div class="request-actions">
+            <button class="request-btn decline" id="game-decline-btn">Decline</button>
+            <button class="request-btn accept" id="game-accept-btn">Accept</button>
+        </div>
+    </div>
+
+    <!-- Scribble Game Overlay -->
+    <div class="game-overlay" id="scribble-overlay" style="display:none;">
+        <div class="scribble-container">
+            <div class="game-header">
+                <h3>Scribble — <span id="scribble-status-title">Waiting...</span></h3>
+                <button class="game-close" id="close-scribble-btn">✕</button>
+            </div>
+            
+            <div class="scribble-layout">
+                <div class="scribble-sidebar">
+                    <h4>Leaderboard</h4>
+                    <div id="scribble-leaderboard" class="scribble-players">
+                        <!-- Players will be listed here -->
+                    </div>
+                </div>
+
+                <div class="scribble-main">
+                    <div class="scribble-top-bar">
+                        <div id="scribble-word-hint" class="word-hint">_ _ _ _ _</div>
+                        <div id="scribble-timer" class="game-timer-val">80s</div>
+                    </div>
+
+                    <div class="canvas-container">
+                        <canvas id="scribble-canvas" width="900" height="540"></canvas>
+                        
+                        <!-- Word Selection Overlay -->
+                        <div id="scribble-word-picker" class="word-picker" style="display:none;">
+                            <h4>Choose a word to draw:</h4>
+                            <div class="word-options" id="scribble-word-options"></div>
+                        </div>
+
+                        <!-- Round End Overlay -->
+                        <div id="scribble-round-overlay" class="round-overlay" style="display:none;">
+                            <h2 id="round-result-title">Time's Up!</h2>
+                            <p id="round-result-word">The word was: <strong>apple</strong></p>
+                        </div>
+                    </div>
+
+                    <div id="scribble-toolbar" class="scribble-toolbar" style="display:none;">
+                        <div class="tool-group">
+                            <button class="tool-btn active" data-tool="brush" title="Brush">🖌️</button>
+                            <button class="tool-btn" data-tool="eraser" title="Eraser">🧽</button>
+                            <button class="tool-btn" id="scribble-clear" title="Clear Canvas">🗑️</button>
+                        </div>
+                        <div class="color-palette">
+                            <div class="color-swatch active" style="background: #ffffff;" data-color="#ffffff"></div>
+                            <div class="color-swatch" style="background: #ff5c4d;" data-color="#ff5c4d"></div>
+                            <div class="color-swatch" style="background: #53bdeb;" data-color="#53bdeb"></div>
+                            <div class="color-swatch" style="background: #f59e0b;" data-color="#f59e0b"></div>
+                            <div class="color-swatch" style="background: #25d366;" data-color="#25d366"></div>
+                            <div class="color-swatch" style="background: #000000;" data-color="#000000"></div>
+                        </div>
+                        <div class="brush-sizes">
+                            <input type="range" id="brush-size" min="2" max="20" value="5">
+                        </div>
+                    </div>
+                    
+                    <button id="scribble-start-btn" class="auth-btn" style="display:none;width:100%;">🚀 Start Game</button>
+
+                    <div class="scribble-chat-area">
+                        <div id="scribble-chat-log" class="scribble-chat-log"></div>
+                        <div class="scribble-input-group">
+                            <input type="text" id="scribble-guess-input" placeholder="Type your guess here...">
+                            <button id="scribble-guess-btn">Guess</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Voice Call Overlay -->
+    <div class="call-overlay" id="call-overlay">
+        <div class="call-panel">
+            <div class="call-drag-handle" id="call-drag-handle" title="Drag to move call card" aria-label="Move call card">⠿ Drag</div>
+            <div class="call-avatar" id="call-avatar"></div>
+            <div class="call-name" id="call-name">Voice call</div>
+            <div class="call-status" id="call-status">Connecting...</div>
+            <div class="call-timer" id="call-timer">00:00</div>
+            <div class="call-actions">
+                <button class="call-action-btn" id="call-mute-btn" title="Mute microphone">🎙</button>
+                <button class="call-action-btn danger" id="call-end-btn" title="End call">✕</button>
+            </div>
+            <audio id="remote-audio" autoplay></audio>
+        </div>
+    </div>
+
+    <div class="call-incoming" id="call-incoming">
+        <div class="call-incoming-info">
+            <div class="call-incoming-title" id="incoming-call-name">Incoming voice call</div>
+            <div class="call-incoming-subtitle" id="incoming-call-status">Ringing...</div>
+        </div>
+        <div class="call-incoming-actions">
+            <button class="call-mini-btn danger" id="incoming-reject-btn" title="Decline">✕</button>
+            <button class="call-mini-btn accept" id="incoming-accept-btn" title="Answer">☎</button>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- My Status Details Modal -->
+    <div class="status-viewer" id="my-status-details" style="display: none;">
+        <div class="status-viewer-content" style="background: var(--bg-secondary);">
+            <div class="status-viewer-header">
+                <div class="status-user-info">
+                    <div class="status-name" style="font-size: 18px; font-weight: 600;">My Status Updates</div>
+                </div>
+                <button class="status-close" onclick="$('my-status-details').style.display='none'">✕</button>
+            </div>
+            <div id="my-status-updates-list" style="flex: 1; overflow-y: auto; padding: 16px;">
+                <!-- List of my status updates and their viewers -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Text Status Modal -->
+    <div class="status-viewer" id="text-status-modal" style="display: none;">
+        <div class="status-viewer-content" id="text-status-bg" style="background: #00a884; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <div class="status-viewer-header" style="position: absolute; top: 0; width: 100%;">
+                <button class="status-close" onclick="$('text-status-modal').style.display='none'">✕</button>
+            </div>
+            <textarea id="status-text-input" placeholder="Type a status" style="background: transparent; border: none; color: white; font-size: 32px; text-align: center; width: 80%; height: 200px; resize: none; outline: none;"></textarea>
+            <div style="position: absolute; bottom: 30px; display: flex; gap: 20px; align-items: center;">
+                <button id="change-status-bg" style="background: rgba(255,255,255,0.2); border: none; padding: 10px; border-radius: 50%; color: white; cursor: pointer;">🎨</button>
+                <button id="post-text-status" style="background: var(--accent); border: none; padding: 15px 30px; border-radius: 30px; color: white; font-weight: bold; cursor: pointer;">POST</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/emojis.js"></script>
+    <script src="/js/stickers.js"></script>
+    <script src="https://unpkg.com/libsodium@0.8.4/dist/modules/libsodium.js"></script>
+    <script src="https://unpkg.com/libsodium-wrappers@0.8.4/dist/modules/libsodium-wrappers.js"></script>
+    <script src="/js/signal-crypto.js"></script>
+    <script src="/js/notification-privacy.js"></script>
+    <script src="/js/call-sounds.js"></script>
+    <script src="/js/presence-visibility.js"></script>
+    <script src="/js/ludo-rules.js"></script>
+    <script src="/js/ludo-board.js"></script>
+    <script src="/js/audio-input.js"></script>
+    <script src="/js/app.js"></script>
+    <script src="/js/refresh.js" defer></script>
+    <script src="/native/messenger-native.js" defer></script>
+    <!-- Status Viewer Modal -->
+    <div class="status-viewer" id="status-viewer" style="display: none;">
+        <div class="status-viewer-content">
+            <div class="status-progress-container" id="status-progress"></div>
+            <div class="status-viewer-header">
+                <div class="status-user-info">
+                    <img src="" alt="" id="status-view-avatar" class="avatar-sm">
+                    <div class="status-user-details">
+                        <div id="status-view-name"></div>
+                        <div id="status-view-time"></div>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="icon-btn danger" id="status-delete-btn" title="Delete status" style="display:none;">🗑️</button>
+                    <button class="status-close" id="status-close">✕</button>
+                </div>
+            </div>
+            <div class="status-media-container" id="status-media">
+                <!-- Status image or video -->
+            </div>
+            <div class="status-viewer-footer" id="status-viewer-footer">
+                <div class="status-reply-box" id="status-reply-box">
+                    <input type="text" id="status-reply-input" placeholder="Reply to status">
+                    <button id="status-reply-send" title="Send reply">➤</button>
+                </div>
+                <button class="status-seen-btn" id="status-seen-btn" style="display:none;">Seen by 0</button>
+            </div>
+            <div class="status-seen-panel" id="status-seen-panel">
+                <div class="status-seen-header">
+                    <span>Seen by</span>
+                    <button id="status-seen-close">✕</button>
+                </div>
+                <div class="status-seen-list" id="status-seen-list"></div>
+            </div>
+            <button class="status-nav prev" id="status-prev">‹</button>
+            <button class="status-nav next" id="status-next">›</button>
+        </div>
+    </div>
+
+    <input type="file" id="status-input" accept="image/*,video/*" style="display: none;">
+<script src="/js/game-icons.js"></script>
+<script src="/js/arcade.js"></script>
+<script src="/js/account-security.js"></script>
+</body>
+</html>

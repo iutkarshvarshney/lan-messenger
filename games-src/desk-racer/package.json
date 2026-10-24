@@ -1,0 +1,26 @@
+{
+  "name": "desk-racer",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port=3000 --host=0.0.0.0",
+    "build": "vite build",
+    "lint": "tsc --noEmit",
+    "preview": "vite preview --port=3000 --host=0.0.0.0"
+  },
+  "dependencies": {
+    "@dimforge/rapier3d-compat": "^0.19.3",
+    "react": "^19.0.1",
+    "react-dom": "^19.0.1",
+    "three": "^0.183.2",
+    "vite": "^6.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@types/three": "^0.183.0",
+    "typescript": "~5.8.2"
+  }
+}

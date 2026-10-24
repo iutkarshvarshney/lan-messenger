@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <rect width="200" height="200" rx="30" fill="#FF6B35"/>
+  <text x="100" y="110" font-size="80" text-anchor="middle" dominant-baseline="middle">🤨</text>
+  <text x="100" y="175" font-size="22" font-weight="bold" text-anchor="middle" fill="white" font-family="Arial">Bhai!</text>
+</svg>

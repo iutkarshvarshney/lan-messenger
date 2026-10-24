@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e"/>
+      <stop offset="100%" style="stop-color:#16213e"/>
+    </linearGradient>
+    <radialGradient id="glow4" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:0.3"/>
+      <stop offset="100%" style="stop-color:#FFD700;stop-opacity:0"/>
+    </radialGradient>
+    <filter id="neon4">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="200" height="200" rx="20" fill="url(#bg4)"/>
+  <circle cx="100" cy="100" r="80" fill="url(#glow4)"/>
+  <rect x="4" y="4" width="192" height="192" rx="18" fill="none" stroke="#FFD700" stroke-width="2" opacity="0.6"/>
+  
+  <!-- Cool figure with coat -->
+  <g transform="translate(100,72)">
+    <!-- Body / coat -->
+    <path d="M -25 20 L -30 55 L 30 55 L 25 20 Z" fill="#111" stroke="#333" stroke-width="1"/>
+    <!-- Collar -->
+    <path d="M -10 18 L 0 28 L 10 18" fill="none" stroke="#FFD700" stroke-width="1.5"/>
+    <!-- Head -->
+    <circle cx="0" cy="0" r="22" fill="#D4A07A" stroke="#333" stroke-width="1.5"/>
+    <!-- Cool sunglasses -->
+    <rect x="-18" y="-6" width="14" height="10" rx="3" fill="#111" stroke="#FFD700" stroke-width="1"/>
+    <rect x="4" y="-6" width="14" height="10" rx="3" fill="#111" stroke="#FFD700" stroke-width="1"/>
+    <line x1="-4" y1="0" x2="4" y2="0" stroke="#FFD700" stroke-width="1.5"/>
+    <!-- Reflection -->
+    <rect x="-15" y="-4" width="5" height="3" rx="1" fill="#FFD700" opacity="0.2"/>
+    <rect x="7" y="-4" width="5" height="3" rx="1" fill="#FFD700" opacity="0.2"/>
+    <!-- Smirk -->
+    <path d="M -6 10 Q 3 16 10 10" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+    <!-- Stubble -->
+    <circle cx="-5" cy="14" r="0.5" fill="#888"/>
+    <circle cx="0" cy="15" r="0.5" fill="#888"/>
+    <circle cx="5" cy="14" r="0.5" fill="#888"/>
+    <!-- Hair slicked -->
+    <path d="M -22 -8 Q -20 -25 0 -25 Q 20 -25 22 -8" fill="#111"/>
+  </g>
+  
+  <!-- Text -->
+  <text x="100" y="150" text-anchor="middle" font-family="Arial Black, Impact, sans-serif" font-size="16" font-weight="900" fill="#FFD700" filter="url(#neon4)">TERA BAAP</text>
+  <text x="100" y="172" text-anchor="middle" font-family="Arial Black, Impact, sans-serif" font-size="18" font-weight="900" fill="#fff" filter="url(#neon4)">AAYA! 😎</text>
+  
+  <!-- Sparkle effects -->
+  <g fill="#FFD700" opacity="0.8">
+    <polygon points="25,25 27,20 29,25 34,27 29,29 27,34 25,29 20,27" />
+    <polygon points="170,30 172,25 174,30 179,32 174,34 172,39 170,34 165,32" />
+    <polygon points="20,170 22,165 24,170 29,172 24,174 22,179 20,174 15,172" />
+  </g>
+</svg>

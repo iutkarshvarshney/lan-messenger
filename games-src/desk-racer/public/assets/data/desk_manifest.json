@@ -1,0 +1,89 @@
+{
+  "scale_system": {
+    "unit": "meters (1.0 unit = 1000 mm)",
+    "desk_top_y": 0.0,
+    "kart_scale_ratio": "1:87 HO Micro-Coaster Scale",
+    "track_width_m": 0.022,
+    "curb_width_m": 0.0025,
+    "kart_dimensions_m": {
+      "length": 0.018,
+      "width": 0.012,
+      "height": 0.008
+    },
+    "calibration_ruler": {
+      "object": "Logitech G915 Lightspeed Full-Size Mechanical Keyboard",
+      "width_m": 0.475,
+      "depth_m": 0.150,
+      "height_m": 0.022
+    }
+  },
+  "desk_objects": [
+    {
+      "id": "oak_desk_tabletop",
+      "name": "Light Weathered Oak Standing Desk",
+      "center_xyz": [0.0, -0.0125, 0.0],
+      "dimensions_wdh": [1.100, 0.600, 0.025],
+      "top_surface_y": 0.0
+    },
+    {
+      "id": "boyata_laptop_stand",
+      "name": "BoYata Matte-Black Aluminum Z-Pillar Laptop Stand",
+      "center_xyz": [-0.360, 0.0, -0.070],
+      "dimensions_wdh": [0.260, 0.220, 0.165],
+      "top_arms_y": 0.165,
+      "rotation_y_deg": 12.0
+    },
+    {
+      "id": "ginger_cat_figurine",
+      "name": "Chubby Ginger-and-White Cat Figurine",
+      "center_xyz": [-0.155, 0.0, -0.115],
+      "dimensions_wdh": [0.060, 0.058, 0.074],
+      "helix_center_xz": [-0.155, -0.115],
+      "helix_radius_m": 0.052
+    },
+    {
+      "id": "lg_ultragear_monitor",
+      "name": "LG UltraGear 27-inch Monitor + Top Webcam",
+      "center_xyz": [0.010, 0.0, -0.245],
+      "panel_dimensions_wdh": [0.614, 0.045, 0.365],
+      "base_dimensions_wdh": [0.120, 0.110, 0.012],
+      "panel_bottom_y": 0.075,
+      "webcam_xyz": [-0.130, 0.455, -0.235]
+    },
+    {
+      "id": "boom_arm_blue_mic",
+      "name": "Articulated Black Boom Arm + Dynamic Podcasting Microphone (Blue LED Ring)",
+      "clamp_xyz": [0.245, 0.0, -0.285],
+      "elbow_xyz": [0.110, 0.105, -0.140],
+      "mic_xyz": [-0.025, 0.105, -0.045],
+      "mic_dimensions_wdh": [0.058, 0.135, 0.065],
+      "blue_led_color_hex": "#1e6bff"
+    },
+    {
+      "id": "white_key_light_lamp",
+      "name": "White Oval Diffused Key-Light Desk Lamp",
+      "base_xyz": [0.355, 0.0, -0.095],
+      "base_radius_m": 0.0925,
+      "base_height_m": 0.016,
+      "pole_top_xyz": [0.355, 0.360, -0.095],
+      "head_dimensions_wdh": [0.280, 0.035, 0.180],
+      "corkscrew_center_xz": [0.355, -0.095],
+      "corkscrew_radius_m": 0.056
+    },
+    {
+      "id": "logitech_g915_keyboard",
+      "name": "Logitech G915 Lightspeed Wireless Mechanical Keyboard",
+      "center_xyz": [-0.085, 0.0, 0.135],
+      "dimensions_wdh": [0.475, 0.150, 0.022]
+    },
+    {
+      "id": "razer_mat_and_mouse",
+      "name": "Razer Hard Mouse Mat + Black Wireless Ergonomic Gaming Mouse",
+      "mat_center_xyz": [0.325, 0.0, 0.135],
+      "mat_dimensions_wdh": [0.340, 0.265, 0.003],
+      "mouse_center_xyz": [0.285, 0.003, 0.115],
+      "mouse_dimensions_wdh": [0.075, 0.130, 0.042],
+      "mouse_rotation_y_deg": -10.0
+    }
+  ]
+}

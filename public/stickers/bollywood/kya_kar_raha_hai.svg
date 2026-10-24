@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#C62828"/><stop offset="100%" style="stop-color:#D84315"/>
+    </linearGradient>
+    <filter id="s"><feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.5"/></filter>
+  </defs>
+  <rect width="200" height="200" rx="20" fill="url(#bg)"/>
+  <rect x="4" y="4" width="192" height="192" rx="18" fill="none" stroke="#FFAB00" stroke-width="2.5"/>
+  <circle cx="100" cy="65" r="38" fill="#E8B88A" stroke="#333" stroke-width="2"/>
+  <ellipse cx="84" cy="58" rx="8" ry="10" fill="#fff" stroke="#333" stroke-width="1.5"/>
+  <ellipse cx="116" cy="58" rx="8" ry="10" fill="#fff" stroke="#333" stroke-width="1.5"/>
+  <circle cx="84" cy="60" r="5" fill="#222"/><circle cx="116" cy="60" r="5" fill="#222"/>
+  <circle cx="86" cy="58" r="2" fill="#fff"/><circle cx="118" cy="58" r="2" fill="#fff"/>
+  <path d="M 72 44 Q 78 40 92 48" fill="none" stroke="#222" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 128 44 Q 122 40 108 48" fill="none" stroke="#222" stroke-width="3" stroke-linecap="round"/>
+  <ellipse cx="100" cy="82" rx="10" ry="8" fill="#333" stroke="#222" stroke-width="1.5"/>
+  <path d="M 62 48 Q 65 25 100 18 Q 135 25 138 48" fill="#222"/>
+  <text x="30" y="45" font-size="28" fill="#FFAB00" opacity="0.8" font-family="Arial Black" font-weight="900">?</text>
+  <text x="158" y="40" font-size="22" fill="#FFAB00" opacity="0.8" font-family="Arial Black" font-weight="900">?</text>
+  <text x="100" y="135" text-anchor="middle" font-family="Impact,sans-serif" font-size="15" font-weight="900" fill="#FFAB00" filter="url(#s)">KYA KAR</text>
+  <text x="100" y="158" text-anchor="middle" font-family="Impact,sans-serif" font-size="15" font-weight="900" fill="#fff" filter="url(#s)">RAHA HAI</text>
+  <text x="100" y="180" text-anchor="middle" font-family="Impact,sans-serif" font-size="16" font-weight="900" fill="#FFAB00" filter="url(#s)">TU?! 😤</text>
+</svg>

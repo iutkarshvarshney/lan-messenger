@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#2C2C2C"/><stop offset="100%" style="stop-color:#1A1A1A"/></linearGradient>
+    <filter id="s"><feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.5"/></filter>
+  </defs>
+  <rect width="200" height="200" rx="20" fill="url(#bg)"/>
+  <rect x="4" y="4" width="192" height="192" rx="18" fill="none" stroke="#555" stroke-width="2"/>
+  <!-- NPC flat face -->
+  <circle cx="100" cy="70" r="42" fill="#9DC68D" stroke="#7AAA6A" stroke-width="2"/>
+  <!-- Blank pixel eyes -->
+  <rect x="78" y="58" width="14" height="14" rx="2" fill="#1A1A1A"/>
+  <rect x="108" y="58" width="14" height="14" rx="2" fill="#1A1A1A"/>
+  <!-- Straight flat mouth -->
+  <rect x="82" y="84" width="36" height="6" rx="3" fill="#1A1A1A"/>
+  <!-- Pixelated shading on face -->
+  <rect x="62" y="55" width="6" height="6" fill="#7AAA6A" opacity="0.5"/>
+  <rect x="132" y="55" width="6" height="6" fill="#7AAA6A" opacity="0.5"/>
+  <!-- Speech bubble -->
+  <rect x="110" y="18" width="78" height="32" rx="8" fill="#fff" stroke="#ccc" stroke-width="1.5"/>
+  <polygon points="115,50 110,60 125,50" fill="#fff"/>
+  <text x="149" y="32" text-anchor="middle" font-family="monospace" font-size="8" font-weight="bold" fill="#333">I AM NORMAL</text>
+  <text x="149" y="44" text-anchor="middle" font-family="monospace" font-size="8" font-weight="bold" fill="#333">HUMAN PERSON</text>
+  <!-- Glitch lines -->
+  <rect x="58" y="80" width="84" height="2" fill="#0FF" opacity="0.3"/>
+  <rect x="58" y="90" width="84" height="1" fill="#F0F" opacity="0.2"/>
+  <text x="100" y="138" text-anchor="middle" font-family="Impact,sans-serif" font-size="22" font-weight="900" fill="#9DC68D" filter="url(#s)">NPC MODE</text>
+  <text x="100" y="162" text-anchor="middle" font-family="monospace" font-size="10" fill="#555">quest_giver.exe</text>
+  <text x="100" y="185" text-anchor="middle" font-size="18">🤖💬</text>
+</svg>

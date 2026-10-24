@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#263238"/><stop offset="100%" style="stop-color:#37474F"/>
+    </linearGradient>
+    <filter id="s"><feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.4"/></filter>
+  </defs>
+  <rect width="200" height="200" rx="20" fill="url(#bg)"/>
+  <rect x="4" y="4" width="192" height="192" rx="18" fill="none" stroke="#FFD54F" stroke-width="2"/>
+  <!-- Surprised Pikachu face -->
+  <circle cx="100" cy="72" r="42" fill="#FFCA28" stroke="#F9A825" stroke-width="2"/>
+  <!-- Rosy cheeks -->
+  <circle cx="70" cy="80" r="10" fill="#FF5252" opacity="0.4"/>
+  <circle cx="130" cy="80" r="10" fill="#FF5252" opacity="0.4"/>
+  <!-- Big surprised eyes -->
+  <ellipse cx="82" cy="65" rx="10" ry="13" fill="#fff" stroke="#333" stroke-width="1.5"/>
+  <ellipse cx="118" cy="65" rx="10" ry="13" fill="#fff" stroke="#333" stroke-width="1.5"/>
+  <circle cx="82" cy="67" r="6" fill="#222"/><circle cx="118" cy="67" r="6" fill="#222"/>
+  <circle cx="84" cy="64" r="2.5" fill="#fff"/><circle cx="120" cy="64" r="2.5" fill="#fff"/>
+  <!-- Tiny dot pupils -->
+  <circle cx="82" cy="68" r="2" fill="#000"/><circle cx="118" cy="68" r="2" fill="#000"/>
+  <!-- Surprised O mouth -->
+  <ellipse cx="100" cy="90" rx="8" ry="10" fill="#333" stroke="#222" stroke-width="1.5"/>
+  <!-- Ears -->
+  <path d="M 60 42 L 48 15 L 72 38" fill="#FFCA28" stroke="#F9A825" stroke-width="2"/>
+  <path d="M 60 42 L 52 22 L 68 38" fill="#333"/>
+  <path d="M 140 42 L 152 15 L 128 38" fill="#FFCA28" stroke="#F9A825" stroke-width="2"/>
+  <path d="M 140 42 L 148 22 L 132 38" fill="#333"/>
+  <text x="100" y="145" text-anchor="middle" font-family="Impact,sans-serif" font-size="18" font-weight="900" fill="#FFCA28" filter="url(#s)">SURPRISED</text>
+  <text x="100" y="170" text-anchor="middle" font-family="Impact,sans-serif" font-size="20" font-weight="900" fill="#fff" filter="url(#s)">PIKACHU 😮</text>
+</svg>

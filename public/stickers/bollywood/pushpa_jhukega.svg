@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bgPush" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1B5E20"/>
+      <stop offset="100%" style="stop-color:#2E7D32"/>
+    </linearGradient>
+    <filter id="sh2"><feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.5"/></filter>
+  </defs>
+  <rect width="200" height="200" rx="20" fill="url(#bgPush)"/>
+  <rect x="4" y="4" width="192" height="192" rx="18" fill="none" stroke="#FFD700" stroke-width="2.5"/>
+  
+  <!-- Flower garland -->
+  <path d="M 55 95 Q 100 115 145 95" fill="none" stroke="#FF6D00" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="60" cy="95" r="5" fill="#FF1744"/>
+  <circle cx="75" cy="100" r="4" fill="#FFC107"/>
+  <circle cx="90" cy="104" r="5" fill="#FF1744"/>
+  <circle cx="105" cy="105" r="4" fill="#FFC107"/>
+  <circle cx="120" cy="103" r="5" fill="#FF1744"/>
+  <circle cx="135" cy="98" r="4" fill="#FFC107"/>
+  <circle cx="145" cy="93" r="5" fill="#FF1744"/>
+  
+  <!-- Face -->
+  <circle cx="100" cy="60" r="35" fill="#C68642" stroke="#333" stroke-width="2"/>
+  <!-- Intense eyes -->
+  <ellipse cx="87" cy="55" rx="6" ry="7" fill="#fff" stroke="#333" stroke-width="1.5"/>
+  <ellipse cx="113" cy="55" rx="6" ry="7" fill="#fff" stroke="#333" stroke-width="1.5"/>
+  <circle cx="87" cy="56" r="3.5" fill="#1A1A1A"/>
+  <circle cx="113" cy="56" r="3.5" fill="#1A1A1A"/>
+  <circle cx="88" cy="55" r="1" fill="#fff"/>
+  <circle cx="114" cy="55" r="1" fill="#fff"/>
+  <!-- Angry eyebrows -->
+  <path d="M 78 46 L 94 50" fill="none" stroke="#111" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M 122 46 L 106 50" fill="none" stroke="#111" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Beard -->
+  <path d="M 72 70 Q 100 95 128 70" fill="#222" stroke="#111" stroke-width="1"/>
+  <!-- Mustache -->
+  <path d="M 82 68 Q 90 75 100 68 Q 110 75 118 68" fill="#111"/>
+  <!-- Mouth -->
+  <path d="M 88 72 Q 100 78 112 72" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Hair -->
+  <path d="M 65 45 Q 68 20 100 15 Q 132 20 135 45" fill="#111"/>
+  <!-- Wild hair strands -->
+  <path d="M 75 25 Q 70 12 80 10" fill="none" stroke="#111" stroke-width="2"/>
+  <path d="M 100 17 Q 100 5 105 3" fill="none" stroke="#111" stroke-width="2"/>
+  
+  <!-- Pointing hand -->
+  <g transform="translate(160,65)">
+    <path d="M 0 0 L 15 -5 L 18 0 L 5 3 Z" fill="#C68642" stroke="#333" stroke-width="1.5"/>
+    <circle cx="17" cy="-2" r="3" fill="#C68642" stroke="#333" stroke-width="1"/>
+  </g>
+  
+  <!-- Text -->
+  <text x="100" y="140" text-anchor="middle" font-family="Arial Black, Impact, sans-serif" font-size="13" font-weight="900" fill="#FFD700" filter="url(#sh2)">PUSHPA</text>
+  <text x="100" y="160" text-anchor="middle" font-family="Arial Black, Impact, sans-serif" font-size="14" font-weight="900" fill="#fff" filter="url(#sh2)">JHUKEGA NAHI</text>
+  <text x="100" y="182" text-anchor="middle" font-family="Arial Black, Impact, sans-serif" font-size="16" font-weight="900" fill="#FFD700" filter="url(#sh2)">SAALA! 🔥</text>
+</svg>

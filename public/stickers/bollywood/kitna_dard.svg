@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#880E4F"/><stop offset="100%" style="stop-color:#AD1457"/>
+    </linearGradient>
+    <filter id="s"><feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.4"/></filter>
+  </defs>
+  <rect width="200" height="200" rx="20" fill="url(#bg)"/>
+  <rect x="4" y="4" width="192" height="192" rx="18" fill="none" stroke="#FF80AB" stroke-width="2" opacity="0.5"/>
+  <!-- Dramatic sad face -->
+  <circle cx="100" cy="60" r="35" fill="#E8B88A" stroke="#333" stroke-width="2"/>
+  <!-- Sad puppy eyes -->
+  <ellipse cx="85" cy="55" rx="8" ry="10" fill="#fff" stroke="#333" stroke-width="1.5"/>
+  <ellipse cx="115" cy="55" rx="8" ry="10" fill="#fff" stroke="#333" stroke-width="1.5"/>
+  <circle cx="85" cy="58" r="5" fill="#4A2500"/><circle cx="115" cy="58" r="5" fill="#4A2500"/>
+  <circle cx="87" cy="56" r="2" fill="#fff"/><circle cx="117" cy="56" r="2" fill="#fff"/>
+  <!-- Tears -->
+  <path d="M 76 62 Q 73 72 76 80" fill="none" stroke="#4FC3F7" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 124 62 Q 127 72 124 80" fill="none" stroke="#4FC3F7" stroke-width="3" stroke-linecap="round"/>
+  <!-- Sad eyebrows -->
+  <path d="M 76 42 Q 85 46 94 42" fill="none" stroke="#222" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M 106 42 Q 115 46 124 42" fill="none" stroke="#222" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Sad mouth -->
+  <path d="M 88 78 Q 100 70 112 78" fill="none" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Hair -->
+  <path d="M 65 42 Q 70 20 100 14 Q 130 20 135 42" fill="#222"/>
+  <text x="100" y="120" text-anchor="middle" font-family="Impact,sans-serif" font-size="13" font-weight="900" fill="#FF80AB" filter="url(#s)">KITNA DARD</text>
+  <text x="100" y="145" text-anchor="middle" font-family="Impact,sans-serif" font-size="16" font-weight="900" fill="#fff" filter="url(#s)">DEGA RE TU</text>
+  <text x="100" y="178" text-anchor="middle" font-size="28">😭💔</text>
+</svg>
