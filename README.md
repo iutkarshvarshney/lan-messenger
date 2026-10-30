@@ -39,14 +39,20 @@ Password recovery does not reconstruct missing local encryption keys. The projec
 
 Connect a private voice call, then choose **Share your screen** on the call card. Your browser asks you to select a screen/window each time. The call keeps microphone audio separate. Both participants can share independently; the viewer supports fullscreen and minimise, and chat remains available. Use **Stop sharing**, the browser's native stop button, or end the call to stop capture. No screen recording is stored on the server. Sharing requires a supported desktop browser and HTTPS; viewers do not need a local launcher.
 
-**Menu → Local terminal** (also in the sidebar) opens your own Linux terminal. First download/extract the small launcher and run `python3 install.py` as your normal desktop user, without sudo. The browser may ask to open the installed handler. The terminal runs natively on your PC with your existing shell/SSH configuration; it is not a remote server/container shell. No terminal commands, SSH passwords or terminal output are sent through Messenger. The launcher accepts only a fixed open-terminal action and has no listening service/port. Setup/uninstall instructions and readable source are in `companion/linux/README.md` and the download archive.
+**Menu → Web terminal** (also in the sidebar) opens an SSH terminal directly inside Messenger. Enter your Linux PC’s LAN IPv4 address, SSH username, and password or private key. The target PC must already run SSH and be reachable from the Messenger server. Use HTTPS; the terminal shares Messenger’s existing port. Confirm the target host’s SHA256 fingerprint before authentication, or supply a known fingerprint. On the target PC, check it with `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub -E sha256` (the negotiated host-key algorithm may differ).
 
-Rebuild/verify the source-visible launcher after modifying it:
+SSH credentials, commands and output pass through the trusted Messenger backend in memory; they are not saved or logged by Messenger. The target system may keep its own shell history or audit logs. The terminal renderer is isolated in a sandboxed frame with no Messenger token or network access. Close/disconnect ends SSH; minimise keeps the connection running so chat and calls remain usable. Account revocation closes active sessions. Default limits: two sessions per user, 32 server-wide, 20 minutes of inactivity, and bounded input/output buffers.
 
-```sh
-python3 scripts/build-linux-launcher.py
-python3 -m unittest discover -s test -p '*_test.py'
+By default, targets must be literal private IPv4 addresses and use port 22. Set `WEB_TERMINAL_CIDRS` to narrow permitted LAN subnets and `WEB_TERMINAL_PORTS` to allow other SSH ports. No hostnames, public targets, forwarded SSH agent, or default server credentials are used. The optional loopback override is only available outside production for isolated tests.
+
+Rebuild locally vendored terminal assets and their licenses after updating xterm:
+
+```bash
+npm run build:terminal
 ```
+
+The older native launcher remains in `companion/linux` for previously installed users; the web terminal does not require it.
+
 
 ## Games and UI builds
 

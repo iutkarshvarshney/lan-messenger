@@ -18,6 +18,8 @@ const legacyGamesService = require('./legacy-game-service');
 const scenes = require('./scene-service');
 const PresenceTracker = require('./presence-tracker');
 const {CallRelay} = require('./call-service');
+const {TerminalGateway} = require('./web-terminal-service');
+const {TerminalPolicy} = require('./web-terminal-policy');
 const {AttemptLimiter} = require('./account-recovery');
 
 // ─── Config ─────────────────────────────────────────────────
@@ -245,6 +247,10 @@ io.attach(httpServer);
 if (httpsServer) io.attach(httpsServer);
 
 app.use(express.json({ limit: '10mb' }));
+app.get('/terminal-view.html',(req,res)=>{
+    res.set({'Content-Security-Policy':"default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'none'; frame-ancestors 'self'; base-uri 'none'; form-action 'none'; sandbox allow-scripts",'Cache-Control':'no-store','Referrer-Policy':'same-origin'});
+    res.sendFile(path.join(__dirname,'public/terminal-view.html'));
+});
 app.use(express.static(path.join(__dirname, 'public')));
 // app.use('/uploads', express.static(UPLOAD_DIR)); removed to enforce /api/media
 
@@ -384,7 +390,9 @@ adminApp.post('/delete-user', (req, res) => {
             return res.status(400).type('html').send(renderAdminPortal('The two usernames do not match.', true));
         }
 
+        const target = db.getUsersForAdmin().find(user=>user.username===normalizedUsername);
         db.deleteUserByUsername(normalizedUsername);
+        if(target)revokeUserSessions(target.id);
         res.type('html').send(renderAdminPortal(`User ${normalizedUsername} deleted.`, false));
     } catch (err) {
         res.status(400).type('html').send(renderAdminPortal(err.message, true));
@@ -607,6 +615,7 @@ function issueAuthToken(user) {
     return jwt.sign({id:user.id,username:user.username,version:current.auth_version,...(current.password_must_change?{scope:'password-change'}:{})},JWT_SECRET,{expiresIn:current.password_must_change?Math.max(1,Math.min(120,Math.floor((Date.parse(current.temp_password_expires_at)-Date.now())/1000))):'30d'});
 }
 function revokeUserSessions(id) {
+    webTerminal.revokeUser(id);
     io.to(`user:${id}`).emit('auth:revoked');
     io.in(`user:${id}`).disconnectSockets(true);
 }
@@ -1048,6 +1057,23 @@ io.use((socket, next) => {
     } catch (err) {
         next(new Error('Authentication error'));
     }
+});
+
+let terminalPolicy;
+try {
+    terminalPolicy=new TerminalPolicy({
+        ...(process.env.WEB_TERMINAL_CIDRS?{allowedCidrs:process.env.WEB_TERMINAL_CIDRS.split(',').map(s=>s.trim())}:{}),
+        ...(process.env.WEB_TERMINAL_PORTS?{allowedPorts:process.env.WEB_TERMINAL_PORTS.split(',').map(Number)}:{}),
+        allowLoopback:process.env.NODE_ENV!=='production'&&process.env.WEB_TERMINAL_ALLOW_LOOPBACK==='1',
+        allowInsecureLocal:process.env.NODE_ENV!=='production'
+    });
+} catch(error) { terminalPolicy=new TerminalPolicy({allowedCidrs:[],allowedPorts:[]}); }
+const webTerminal=new TerminalGateway({db,verifyToken:token=>jwt.verify(token,JWT_SECRET),policy:terminalPolicy});
+const terminalIO=new Server({path:'/terminal-socket',serveClient:false,transports:['websocket'],maxHttpBufferSize:65536,cors:{origin:false},allowRequest:(request,done)=>done(null,terminalPolicy.allowedRequest(request))});
+terminalIO.attach(httpServer);if(httpsServer)terminalIO.attach(httpsServer);
+webTerminal.attach(terminalIO);
+app.get('/api/terminal/config',authMiddleware,(req,res)=>{
+    res.set('Cache-Control','no-store');res.json({enabled:terminalPolicy.networks.length>0&&terminalPolicy.allowedPorts.length>0,ports:terminalPolicy.allowedPorts});
 });
 
 const callRelay = new CallRelay({io,db});
