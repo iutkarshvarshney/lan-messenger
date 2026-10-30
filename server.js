@@ -1837,6 +1837,16 @@ io.on('connection', (socket) => {
     // Call identities and signals are scoped to the participating sockets.
     callRelay.attach(socket);
 
+    // Existing sockets must subscribe when a group is created or they join one.
+    socket.on('conversation:join', (data, callback) => {
+        if (!validIds(data) || !db.isUserInConversation(userId, data.conversationId)) {
+            if (typeof callback === 'function') callback({ error: 'Access denied' });
+            return;
+        }
+        socket.join(`conv:${data.conversationId}`);
+        if (typeof callback === 'function') callback({ success: true });
+    });
+
     // ─── Disconnect ───────────────
     socket.on('disconnect', () => {
         gameSessions.disconnect(userId, socket.id);

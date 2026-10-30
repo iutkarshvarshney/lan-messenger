@@ -71,7 +71,8 @@ def install():
     state_file = directory / 'installation.json'
     if desktop.exists() and not state_file.is_file():
         raise RuntimeError('A different desktop launcher already uses this filename; no files were changed.')
-    previous = run_mime('query', 'default', MIME)
+    current_default = run_mime('query', 'default', MIME)
+    previous = current_default
     if previous == DESKTOP_ID and state_file.is_file():
         previous = json.loads(state_file.read_text()).get('previous', '')
     if previous and not re.fullmatch(r'[A-Za-z0-9_.-]+\.desktop', previous):
@@ -102,9 +103,9 @@ def install():
             raise RuntimeError('The desktop did not accept the launcher association.')
     except Exception:
         remove_our_association(config, desktop)
-        if previous:
+        if current_default:
             try:
-                run_mime('default', previous, MIME)
+                run_mime('default', current_default, MIME)
             except (subprocess.CalledProcessError, OSError):
                 pass
         for item, old in original.items():

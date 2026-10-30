@@ -74,10 +74,32 @@ class LocalTerminalTests(unittest.TestCase):
             desktop = data / 'applications' / installer.DESKTOP_ID
             desktop.parent.mkdir(parents=True)
             desktop.write_text('Unrelated existing desktop entry')
-            with patch.dict(os.environ, {'XDG_DATA_HOME': str(data)}):
+            with patch.dict(os.environ, {'XDG_DATA_HOME': str(data), 'XDG_CONFIG_HOME': str(Path(directory) / 'config')}):
                 with self.assertRaises(RuntimeError):
                     installer.uninstall()
             self.assertEqual(desktop.read_text(), 'Unrelated existing desktop entry')
+
+    def test_failed_reinstall_restores_the_current_working_handler(self):
+        with tempfile.TemporaryDirectory() as directory:
+            association = {'current': 'previous.desktop', 'fail': False, 'readback': False}
+            def mime(*arguments):
+                if arguments[0] == 'query':
+                    if association['readback']:
+                        association['readback'] = False
+                        raise RuntimeError('Simulated desktop verification failure')
+                    return association['current']
+                association['current'] = arguments[1]
+                if association['fail'] and arguments[1] == installer.DESKTOP_ID:
+                    association['readback'] = True
+                return ''
+            with patch.dict(os.environ, {'XDG_DATA_HOME': str(Path(directory) / 'data'), 'XDG_CONFIG_HOME': str(Path(directory) / 'config')}), patch.object(installer, 'run_mime', side_effect=mime):
+                folder = installer.install()
+                before = (folder / 'terminal_launcher.py').read_bytes()
+                association['fail'] = True
+                with self.assertRaises(RuntimeError):
+                    installer.install()
+                self.assertEqual(association['current'], installer.DESKTOP_ID)
+                self.assertEqual((folder / 'terminal_launcher.py').read_bytes(), before)
 
 
 if __name__ == '__main__':
