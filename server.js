@@ -17,6 +17,7 @@ const {sessions:gameSessions} = require('./game-sessions');
 const legacyGamesService = require('./legacy-game-service');
 const scenes = require('./scene-service');
 const PresenceTracker = require('./presence-tracker');
+const {CallRelay} = require('./call-service');
 const {AttemptLimiter} = require('./account-recovery');
 
 // ─── Config ─────────────────────────────────────────────────
@@ -1049,6 +1050,8 @@ io.use((socket, next) => {
     }
 });
 
+const callRelay = new CallRelay({io,db});
+
 io.on('connection', (socket) => {
     const userId = socket.user.id;
     const clientIp = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address;
@@ -1831,48 +1834,8 @@ io.on('connection', (socket) => {
         });
     });
 
-    // ─── Voice Call Signaling ─────
-    function relayCallEvent(eventName, data = {}, callback) {
-        try {
-            const { conversationId, targetUserId } = data;
-            if (!conversationId || !targetUserId) return callback?.({ error: 'Conversation and target user are required' });
-            if (!db.isUserInConversation(userId, conversationId)) return callback?.({ error: 'Access denied' });
-            if (!db.isUserInConversation(targetUserId, conversationId)) return callback?.({ error: 'Target user is not in this conversation' });
-
-            const conv = db.getConversationById(conversationId);
-            if (!conv || conv.type !== 'private') return callback?.({ error: 'Voice calls are available for private chats only' });
-
-            io.to(`user:${targetUserId}`).emit(eventName, {
-                ...data,
-                fromUserId: userId,
-                fromUsername: socket.user.username
-            });
-
-            // Log missed/rejected calls as system messages
-            if (eventName === 'call:reject' || eventName === 'call:cancel') {
-                const text = eventName === 'call:reject' ? 'Call declined' : 'Missed call';
-                const msg = db.addMessage(conversationId, userId, text, 'system');
-                io.to(`conv:${conversationId}`).emit('message:new', msg);
-            }
-
-            callback?.({ success: true });
-        } catch (err) {
-            callback?.({ error: err.message });
-        }
-    }
-
-    socket.on('call:offer', (data, callback) => relayCallEvent('call:offer', data, callback));
-    socket.on('call:answer', (data, callback) => relayCallEvent('call:answer', data, callback));
-    socket.on('call:ice-candidate', (data, callback) => relayCallEvent('call:ice-candidate', data, callback));
-    socket.on('call:reject', (data, callback) => relayCallEvent('call:reject', data, callback));
-    socket.on('call:end', (data, callback) => relayCallEvent('call:end', data, callback));
-
-    // ─── Join conversation room ───
-    socket.on('conversation:join', (data) => {
-        if (!validIds(data)) return;
-        if (!db.isUserInConversation(userId, data?.conversationId)) return;
-        socket.join(`conv:${data.conversationId}`);
-    });
+    // Call identities and signals are scoped to the participating sockets.
+    callRelay.attach(socket);
 
     // ─── Disconnect ───────────────
     socket.on('disconnect', () => {
