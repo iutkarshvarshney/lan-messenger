@@ -3,6 +3,17 @@ const {TerminalPolicy}=require('../web-terminal-policy');
 const {TerminalGateway}=require('../web-terminal-service');
 const crypto=require('node:crypto');
 const REQUEST='request-1234567890123';
+
+function ed25519OpenSSH(){
+ const jwk=crypto.generateKeyPairSync('ed25519').privateKey.export({format:'jwk'});
+ const str=value=>{const b=Buffer.isBuffer(value)?value:Buffer.from(value),length=Buffer.alloc(4);length.writeUInt32BE(b.length);return Buffer.concat([length,b]);};
+ const pub=Buffer.from(jwk.x,'base64url'),priv=Buffer.from(jwk.d,'base64url'),publicSSH=Buffer.concat([str('ssh-ed25519'),str(pub)]);
+ let block=Buffer.concat([Buffer.alloc(8,1),str('ssh-ed25519'),str(pub),str(Buffer.concat([priv,pub])),str('qa')]);
+ const pad=8-block.length%8;block=Buffer.concat([block,Buffer.from(Array.from({length:pad},(_,i)=>i+1))]);
+ const count=Buffer.alloc(4);count.writeUInt32BE(1);
+ return '-----BEGIN OPENSSH PRIVATE KEY-----\n'+Buffer.concat([Buffer.from('openssh-key-v1\0'),str('none'),str('none'),str(''),count,str(publicSSH),str(block)]).toString('base64')+'\n-----END OPENSSH PRIVATE KEY-----';
+}
+
 class Channel extends EventEmitter{constructor(){super();this.stderr=new EventEmitter();this.stderr.pause=()=>{};this.stderr.resume=()=>{};this.writes=[];this.pauses=0;}write(data,cb){this.writes.push(data);cb?.();return true;}pause(){this.pauses++;}resume(){}setWindow(...value){this.window=value;}end(){this.emit('close');}}
 class Client extends EventEmitter{connect(options){this.options=options;options.hostVerifier(Buffer.from('host-key'),accepted=>{this.trusted=accepted;if(accepted)queueMicrotask(()=>this.emit('ready'));});}shell(options,callback){this.pty=options;this.channel=new Channel();callback(null,this.channel);}end(){this.ended=true;this.emit('close');}destroy(){this.destroyed=true;}}
 function fixture(options={}){
@@ -92,12 +103,13 @@ test('real SSH password and encrypted-key login support PTY I/O, resize and clea
  const keyPair=crypto.generateKeyPairSync('rsa',{modulusLength:2048});
  const clear=keyPair.privateKey.export({type:'pkcs1',format:'pem'}),parsed=utils.parseKey(clear);
  const encrypted=keyPair.privateKey.export({type:'pkcs1',format:'pem',cipher:'aes-256-cbc',passphrase:'fixture-passphrase'});
+ const edKey=ed25519OpenSSH(),edParsed=utils.parseKey(edKey);
  let resized=false;const peers=new Set();
  const server=new Server({hostKeys:[host]},peer=>{peers.add(peer);peer.on('error',()=>{});peer.on('close',()=>peers.delete(peer));
   peer.on('authentication',ctx=>{
    if(ctx.username!=='qa')return ctx.reject();
    if(ctx.method==='password'&&ctx.password==='fixture-password')return ctx.accept();
-   if(ctx.method==='publickey'&&ctx.key.data.equals(parsed.getPublicSSH())&&(!ctx.signature||parsed.verify(ctx.blob,ctx.signature,ctx.hashAlgo)))return ctx.accept();
+   if(ctx.method==='publickey'){const key=[parsed,edParsed].find(k=>ctx.key.data.equals(k.getPublicSSH()));if(key&&(!ctx.signature||key.verify(ctx.blob,ctx.signature,ctx.hashAlgo)))return ctx.accept();}
    ctx.reject();
   });
   peer.on('ready',()=>peer.on('session',accept=>{const session=accept();session.on('pty',accept=>accept());session.on('window-change',(accept,reject,info)=>{resized=info.cols===100;if(accept)accept();});session.on('shell',accept=>{const stream=accept();stream.write('\x1b[32mSSH ready नमस्ते🙂\x1b[0m\r\n');stream.on('data',data=>stream.write(data));});}));
@@ -105,7 +117,7 @@ test('real SSH password and encrypted-key login support PTY I/O, resize and clea
  server.listen(0,'127.0.0.1');await once(server,'listening');t.after(()=>{for(const peer of peers)peer.end();server.close();});
  const port=server.address().port;
  const policy=new TerminalPolicy({allowedCidrs:['127.0.0.0/8'],allowedPorts:[port],allowLoopback:true});
- for(const auth of [{authType:'password',password:'fixture-password'},{authType:'key',privateKey:encrypted,passphrase:'fixture-passphrase'}]){
+ for(const auth of [{authType:'password',password:'fixture-password'},{authType:'key',privateKey:encrypted,passphrase:'fixture-passphrase'},{authType:'key',privateKey:edKey}]){
   const f=fixture({policy,createClient:()=>new (require('ssh2').Client)()});t.after(()=>f.gateway.shutdown());
   const wait=async predicate=>{for(let i=0;i<200;i++){if(predicate())return;await new Promise(r=>setTimeout(r,20));}assert.fail('SSH integration timed out');};
   const {sessionId}=await f.a.send('terminal:connect',{...f.connect,...auth,host:'127.0.0.1',port,username:'qa'});assert.ok(sessionId);
