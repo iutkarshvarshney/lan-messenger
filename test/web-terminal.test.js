@@ -136,3 +136,8 @@ test('connection deadline also covers a server that never answers the shell requ
  f.clients[0].shell=()=>{};await f.a.send('terminal:trust',{sessionId,accept:true});await new Promise(resolve=>setTimeout(resolve,65));
  assert.equal(f.gateway.sessions.size,0);assert.ok(f.clients[0].destroyed);f.gateway.shutdown();
 });
+test('host confirmation timeout and output hard cap close the SSH client',async()=>{
+ const pending=fixture({hostMs:20});await pending.a.send('terminal:connect',pending.connect);await new Promise(resolve=>setTimeout(resolve,50));assert.equal(pending.gateway.sessions.size,0);assert.equal(pending.clients[0].trusted,false);assert.ok(pending.clients[0].destroyed);pending.gateway.shutdown();
+ const f=fixture({maxOutput:16}),{sessionId}=await f.a.send('terminal:connect',f.connect);await f.a.send('terminal:trust',{sessionId,accept:true});await Promise.resolve();
+ f.clients[0].channel.emit('data',Buffer.from('x'.repeat(32)));assert.equal(f.gateway.sessions.size,0);assert.ok(f.clients[0].destroyed);assert.ok(!f.a.sent.some(e=>e.event==='terminal:output'));f.gateway.shutdown();
+});
