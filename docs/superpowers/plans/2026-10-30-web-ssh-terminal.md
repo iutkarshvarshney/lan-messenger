@@ -25,17 +25,17 @@
 ### Task1: SSH gateway
 Files web-terminal-policy.js,web-terminal-service.js,test/web-terminal.test.js,server.js.
 Interfaces gateway.attach(terminalIO), revokeUser(id), shutdown(); injected db.getAuthState/verifyToken. Separate /terminal-socket transport; connect(requestId,host,port,username,auth,rows,cols,expectedFingerprint) returns sessionId; trust/input/resize/ack/disconnect all session-scoped.
-- [ ] Add failing tests for policy, owner/auth/origin/TLS, host confirmation, stale teardown, backpressure and quotas.
-- [ ] Implement server gateway + revocation wiring; run focused/full tests.
+- [x] Add failing tests for policy, owner/auth/origin/TLS, host confirmation, stale teardown, backpressure and quotas.
+- [x] Implement server gateway + revocation wiring; run focused/full tests.
 
 ### Task2: Embedded terminal UI
 Files replace public/js/local-terminal.js/CSS; create terminal-view.html,terminal-frame.js; vendor xterm through scripts/build-terminal-assets.mjs; update index/menu/README/envexample.
 Interfaces sandbox messages require source identity+random frame nonce; only data/resize/render acknowledgements cross iframe, never JWT/credentials. Parent owns transport, connection/trust UI, cancel/disconnect/minimise, serialized input and memory-only secrets.
-- [ ] Verify vendored licenses; implement guarded parent/frame state and clear all connection secrets on submit/close/logout.
-- [ ] Browser QA for interactive echo/ANSI/UTF8/paste/resize/close/reconnect, stale responses and mobile layout; ensure no launcher download card.
+- [x] Verify vendored licenses; implement guarded parent/frame state and clear all connection secrets on submit/close/logout.
+- [x] Browser QA for interactive echo/ANSI/UTF8/paste/resize/close/reconnect, stale responses and mobile layout; ensure no launcher download card.
 
 ### Task3: Real SSH integration and release
-- [ ] Isolated SSH2 server tests for password/key authentication, fingerprint rejection/approval, PTY I/O/resize, owner separation/revocation and cleanup; native OpenSSH test if available without changing user configuration.
-- [ ] Run existing recovery/group/call/game suites, full Node/Python checks and source audit; one fresh whole-branch review and regressions for findings.
-- [ ] Package new pure JS runtime dependencies and static vendor assets, preserve native SQLite; stage tests + backup/rollback deploy on same ports, verify live hashes and data/env preservation.
-- [ ] Merge/push authorized public source; verify remote ref and document SSH-on-target requirement.
+- [x] Isolated SSH2 server tests for password/key authentication, fingerprint rejection/approval, PTY I/O/resize, owner separation/revocation and cleanup; native OpenSSH test if available without changing user configuration.
+- [x] Run existing recovery/group/call/game suites, full Node/Python checks and source audit; one fresh whole-branch review and regressions for findings.
+- [x] Package new pure JS runtime dependencies and static vendor assets, preserve native SQLite; stage tests + backup/rollback deploy on same ports, verify live hashes and data/env preservation.
+- [x] Merge/push authorized public source; verify remote ref and document SSH-on-target requirement.
