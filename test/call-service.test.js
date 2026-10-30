@@ -10,7 +10,7 @@ function setup(options={}){
  const a=socket('a1','a'),a2=socket('a2','a'),b=socket('b1','b'),b2=socket('b2','b'),c=socket('c1','c');
  const offer={callId:CALL,conversationId:'chat',targetUserId:'b',offer:{type:'offer',sdp:'v=0\r\n'}};
  const answer={callId:CALL,conversationId:'chat',targetUserId:'a',answer:{type:'answer',sdp:'v=0\r\n'}};
- return {relay,sent,messages,a,a2,b,b2,c,offer,answer};
+ return {relay,sent,messages,db,a,a2,b,b2,c,offer,answer};
 }
 test('call offers require private membership, distinct users, and a bounded valid description',()=>{
  const f=setup();assert.ok(f.c.send('call:offer',f.offer).error);
@@ -56,4 +56,10 @@ test('unanswered calls time out once and release both participants',async()=>{
  await new Promise(resolve=>setTimeout(resolve,30));
  assert.equal(f.relay.calls.size,0);assert.equal(f.messages.length,1);
  assert.equal(f.messages[0][2],'Missed call');assert.ok(f.sent.some(m=>m.event==='call:end'&&m.data.reason==='timeout'));
+});
+
+test('a missing conversation during call logging cannot strand the peer ringing',()=>{
+ const f=setup();f.a.send('call:offer',f.offer);f.db.addMessage=()=>{throw Error('Conversation removed');};
+ assert.equal(f.b.send('call:reject',f.answer).success,true);
+ assert.equal(f.relay.calls.size,0);assert.ok(f.sent.some(m=>m.event==='call:reject'&&m.target==='a1'));
 });

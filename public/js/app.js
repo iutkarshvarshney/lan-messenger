@@ -39,7 +39,8 @@ const state = {
         timer: null,
         muted: false,
         makingOffer: false,
-        connectedSoundPlayed: false
+        connectedSoundPlayed: false,
+        id: null, screen: null, signalingSent: false, localIce: [], remoteIce: [], viewerMinimised: false
     },
     recording: {
         active: false,
@@ -745,6 +746,7 @@ async function setupE2E() {
 
 function logout() {
     window.MessengerRecovery?.clear();
+    window.MessengerLocalTerminal?.close();
     window.MessengerArcade?.reset();
     endCurrentCall(false);
     closeLudoGame(false);
@@ -973,6 +975,13 @@ function connectSocket() {
     state.socket.on('call:ice-candidate', handleCallIceCandidate);
     state.socket.on('call:reject', handleCallRejected);
     state.socket.on('call:end', handleRemoteCallEnded);
+    state.socket.on('call:screen-state', data => {
+        if(data.callId===state.call.id&&data.fromUserId===state.call.targetUserId)state.call.screen?.setRemoteSharing(data.sharing);
+    });
+    state.socket.on('call:handled', data => {
+        if(data.callId===state.call.incoming?.callId)endCurrentCall(false);
+    });
+    state.socket.on('disconnect', () => {if(state.call.active||state.call.incoming)endCurrentCall(false);});
 
     state.socket.on('message:reaction', (data) => {
         const { messageId, conversationId, reactions } = data;
@@ -2790,6 +2799,14 @@ function initChatUI() {
     $('incoming-reject-btn')?.addEventListener('click', rejectIncomingCall);
     $('call-end-btn')?.addEventListener('click', () => endCurrentCall(true, 'hangup'));
     $('call-mute-btn')?.addEventListener('click', toggleMuteCall);
+    $('call-share-btn')?.addEventListener('click',toggleScreenShare);
+    $('screen-stop-sharing')?.addEventListener('click',toggleScreenShare);
+    $('call-view-screen')?.addEventListener('click',()=>{state.call.viewerMinimised=false;renderCallScreens();});
+    $('screen-minimise-btn')?.addEventListener('click',()=>{state.call.viewerMinimised=true;renderCallScreens();});
+    $('screen-fullscreen-btn')?.addEventListener('click',async()=>{
+        try{if(document.fullscreenElement)await document.exitFullscreen();else await $('screen-share-viewer').requestFullscreen();}
+        catch(error){showToast('Fullscreen is not available in this browser.',true);}
+    });
     $('request-mic-btn')?.addEventListener('click', requestMicPermission);
     initCallCardDragging();
 }
@@ -2953,6 +2970,7 @@ function updateCallButton() {
 
 function resetCallState() {
     clearInterval(state.call.timer);
+    state.call.screen?.close();
     callSounds.stop();
     state.call = {
         active: false,
@@ -2966,7 +2984,8 @@ function resetCallState() {
         timer: null,
         muted: false,
         makingOffer: false,
-        connectedSoundPlayed: false
+        connectedSoundPlayed: false,
+        id: null, screen: null, signalingSent: false, localIce: [], remoteIce: [], viewerMinimised: false
     };
     updateCallButton();
 }
@@ -2977,6 +2996,7 @@ function setCallStatus(text) {
 }
 
 function showCallOverlay(name, userId, status) {
+    state.call.name = name || 'Voice call';
     $('call-name').textContent = name || 'Voice call';
     $('call-status').textContent = status || 'Connecting...';
     $('call-timer').textContent = '00:00';
@@ -3075,6 +3095,7 @@ function markCallConnected() {
         callSounds.playConnected();
     }
     if (!state.call.startedAt) startCallTimer();
+    renderCallScreens();
 }
 
 async function getCallMedia() {
@@ -3163,208 +3184,198 @@ async function requestMicPermission() {
     }
 }
 
-function createPeerConnection(targetUserId, conversationId) {
-    const peer = new RTCPeerConnection(rtcConfig);
-    state.call.remoteStream = new MediaStream();
-    $('remote-audio').srcObject = state.call.remoteStream;
+function sendCallSignal(event, extra = {}, call = state.call, callback) {
+    if (!call.id || !call.conversationId || !call.targetUserId || !state.socket?.connected) return;
+    const data={callId:call.id,conversationId:call.conversationId,targetUserId:call.targetUserId,...extra};
+    if(typeof callback==='function')state.socket.emit(event,data,callback);else state.socket.emit(event,data);
+}
 
-    peer.ontrack = (event) => {
-        event.streams[0].getTracks().forEach(track => state.call.remoteStream.addTrack(track));
-        markCallConnected();
-    };
+function announceCallDescription(event, description, call) {
+    sendCallSignal(event, description, call, response => {
+        if (response?.error && state.call === call && call.active) {
+            showToast(response.error, true);
+            endCurrentCall(false);
+        }
+    });
+    call.signalingSent = true;
+    for (const candidate of call.localIce.splice(0)) sendCallSignal('call:ice-candidate', {candidate}, call);
+}
 
-    peer.onicecandidate = (event) => {
-        if (event.candidate) {
-            state.socket.emit('call:ice-candidate', {
-                conversationId,
-                targetUserId,
-                candidate: event.candidate
-            });
+async function flushCallIce(call) {
+    if (!call.peer?.remoteDescription) return;
+    for (const candidate of call.remoteIce.splice(0)) {
+        if (state.call !== call || !call.active) return;
+        try { await call.peer.addIceCandidate(candidate); } catch (error) { console.warn('Could not apply a call media candidate'); }
+    }
+}
+
+function createPeerConnection(targetUserId, conversationId, initiator = true) {
+    const peer = new RTCPeerConnection(rtcConfig), call = state.call;
+    call.remoteStream = new MediaStream();
+    $('remote-audio').srcObject = call.remoteStream;
+    call.screen = new ScreenShare.Controller({peer,mediaDevices:navigator.mediaDevices,
+        isCurrent:()=>state.call===call&&call.active,
+        signal:sharing=>sendCallSignal('call:screen-state',{sharing},call),
+        onChange:()=>{if(state.call===call)renderCallScreens();}
+    });
+    if (initiator) call.screen.setSender(peer.addTransceiver('video',{direction:'sendrecv'}).sender);
+    peer.ontrack = event => {
+        if (state.call !== call || !call.active) return;
+        if (event.track.kind === 'video') call.screen.receive(event.track);
+        else if (!call.remoteStream.getTracks().includes(event.track)) {
+            call.remoteStream.addTrack(event.track);
+            $('remote-audio').play().catch(()=>{});
         }
     };
-
+    peer.onicecandidate = event => {
+        if (!event.candidate || state.call !== call || !call.active) return;
+        if (!call.signalingSent) call.localIce.push(event.candidate.toJSON());
+        else sendCallSignal('call:ice-candidate',{candidate:event.candidate.toJSON()},call);
+    };
     peer.onconnectionstatechange = () => {
-        if (peer.connectionState === 'connected') {
-            markCallConnected();
-        }
-        if (['failed', 'closed', 'disconnected'].includes(peer.connectionState)) {
-            if (state.call.active) endCurrentCall(peer.connectionState !== 'closed');
-        }
+        if (state.call !== call || !call.active) return;
+        if (peer.connectionState === 'connected') markCallConnected();
+        if (['failed','closed','disconnected'].includes(peer.connectionState)) endCurrentCall(peer.connectionState !== 'closed');
     };
-
-    state.call.localStream.getTracks().forEach(track => peer.addTrack(track, state.call.localStream));
+    call.localStream.getTracks().forEach(track=>peer.addTrack(track,call.localStream));
     return peer;
 }
 
 async function startVoiceCall() {
     const target = getActivePrivateCallTarget();
-    if (!target) return showToast('Voice calls are available in private chats only', true);
-    if (state.call.active) return showToast('A call is already active', true);
-
-    // Guard: must be on HTTPS (or localhost) for getUserMedia to work
-    if (!window.isSecureContext) {
-        const httpsUrl = window.location.href.replace(/^http:/, 'https:').replace(/:3000(\b|$)/, ':3443');
-        showToast(`Voice calls need HTTPS. Click: ${httpsUrl}`, true, 8000);
-        return;
-    }
-
+    if (!target) return showToast('Calls are available in private chats only', true);
+    if (state.call.active || state.call.incoming) return showToast('A call is already active or ringing', true);
+    if (!window.isSecureContext) return showToast('Calls and screen sharing require the HTTPS Messenger address.',true);
+    const call=state.call;
     try {
-        state.call.active = true;
-        state.call.conversationId = target.conv.id;
-        state.call.targetUserId = target.user.id;
-        showCallOverlay(target.user.display_name, target.user.id, 'Calling...');
-
-        const callConversationId = target.conv.id;
-        const stream = await getCallMedia();
-        if (!state.call.active || state.call.conversationId !== callConversationId) {
-            stream.getTracks().forEach(track => track.stop());
-            return;
-        }
-        state.call.localStream = stream;
-        state.call.peer = createPeerConnection(target.user.id, target.conv.id);
-        state.call.makingOffer = true;
-        const offer = await state.call.peer.createOffer();
-        await state.call.peer.setLocalDescription(offer);
-        state.socket.emit('call:offer', {
-            conversationId: target.conv.id,
-            targetUserId: target.user.id,
-            offer
-        }, (res) => {
-            if (res?.error) {
-                showToast(res.error, true);
-                endCurrentCall(false);
-            }
-        });
-        setCallStatus('Ringing...');
-        callSounds.playOutgoing();
-    } catch (err) {
-        showToast(err.message || 'Could not start voice call', true);
-        endCurrentCall(false);
-    } finally {
-        state.call.makingOffer = false;
-    }
+        call.id=crypto.randomUUID();call.active=true;call.conversationId=target.conv.id;call.targetUserId=target.user.id;
+        showCallOverlay(target.user.display_name,target.user.id,'Calling…');renderCallScreens();updateCallButton();
+        const stream=await getCallMedia();
+        if (state.call!==call||!call.active) {stream.getTracks().forEach(track=>track.stop());return;}
+        call.localStream=stream;call.peer=createPeerConnection(target.user.id,target.conv.id);call.makingOffer=true;
+        const offer=await call.peer.createOffer();
+        if(state.call!==call||!call.active)return;
+        await call.peer.setLocalDescription(offer);
+        if(state.call!==call||!call.active)return;
+        announceCallDescription('call:offer',{offer},call);
+        setCallStatus('Ringing…');callSounds.playOutgoing();
+    } catch(error) {
+        if(state.call===call&&call.active){showToast(error.message||'Could not start call',true);endCurrentCall(false);}
+    } finally {call.makingOffer=false;}
 }
 
 async function handleIncomingCallOffer(data) {
-    let conv = state.conversations.find(c => c.id === data.conversationId);
-    if (!conv) {
-        await loadConversations();
-        conv = state.conversations.find(c => c.id === data.conversationId);
+    if(state.call.incoming?.callId===data.callId)return;
+    if(state.call.active||state.call.incoming){
+        sendCallSignal('call:reject',{reason:'busy'},{id:data.callId,conversationId:data.conversationId,targetUserId:data.fromUserId});return;
     }
-    if (!conv || conv.type !== 'private') return;
-
-    if (state.call.active) {
-        state.socket.emit('call:reject', {
-            conversationId: data.conversationId,
-            targetUserId: data.fromUserId,
-            reason: 'busy'
-        });
-        return;
-    }
-
-    const caller = conv.other_user?.id === data.fromUserId ? conv.other_user : { id: data.fromUserId, display_name: data.fromUsername || 'Someone' };
-    state.call.incoming = { ...data, caller };
-    $('incoming-call-name').textContent = `${caller.display_name || data.fromUsername || 'Someone'} is calling`;
-    $('incoming-call-status').textContent = 'Ringing...';
-    $('call-incoming').classList.add('active');
-    callSounds.playIncoming();
-
-    // Browser notification for call
-    showBrowserNotification(`${caller.display_name || data.fromUsername || 'Someone'} is calling`, {
-        body: 'Click to answer',
-        tag: 'incoming-call',
-        requireInteraction: true
-    }, () => {
-        $('call-incoming').classList.add('active');
-    });
+    const call=state.call;call.incoming={...data};call.remoteIce=[];
+    let conv=state.conversations.find(c=>c.id===data.conversationId);
+    if(!conv){await loadConversations();conv=state.conversations.find(c=>c.id===data.conversationId);}
+    if(state.call!==call||call.incoming?.callId!==data.callId)return;
+    if(!conv||conv.type!=='private'){rejectIncomingCall();return;}
+    const caller=conv.other_user?.id===data.fromUserId?conv.other_user:{id:data.fromUserId,display_name:data.fromUsername||'Someone'};
+    call.incoming.caller=caller;
+    $('incoming-call-name').textContent=`${caller.display_name||data.fromUsername||'Someone'} is calling`;
+    $('incoming-call-status').textContent='Ringing…';$('call-incoming').classList.add('active');callSounds.playIncoming();
+    showBrowserNotification(`${caller.display_name||data.fromUsername||'Someone'} is calling`,{body:'Click to answer',tag:'incoming-call',requireInteraction:true},()=>{if(state.call===call&&call.incoming)$('call-incoming').classList.add('active');});
 }
 
 async function acceptIncomingCall() {
-    const incoming = state.call.incoming;
-    if (!incoming) return;
-
+    const call=state.call,incoming=call.incoming;
+    if(!incoming||call.active)return;
     try {
-        callSounds.stop();
-        state.call.active = true;
-        state.call.conversationId = incoming.conversationId;
-        state.call.targetUserId = incoming.fromUserId;
-        state.call.localStream = await getCallMedia();
-        $('call-incoming').classList.remove('active');
-        showCallOverlay(incoming.caller?.display_name || incoming.fromUsername, incoming.fromUserId, 'Connecting...');
-
-        state.call.peer = createPeerConnection(incoming.fromUserId, incoming.conversationId);
-        await state.call.peer.setRemoteDescription(new RTCSessionDescription(incoming.offer));
-        const answer = await state.call.peer.createAnswer();
-        await state.call.peer.setLocalDescription(answer);
-        state.socket.emit('call:answer', {
-            conversationId: incoming.conversationId,
-            targetUserId: incoming.fromUserId,
-            answer
-        });
-        state.call.incoming = null;
-    } catch (err) {
-        showToast(err.message || 'Could not answer call', true);
-        rejectIncomingCall();
+        callSounds.stop();call.active=true;call.id=incoming.callId;call.conversationId=incoming.conversationId;call.targetUserId=incoming.fromUserId;
+        const stream=await getCallMedia();
+        if(state.call!==call||!call.active){stream.getTracks().forEach(track=>track.stop());return;}
+        call.localStream=stream;$('call-incoming').classList.remove('active');
+        showCallOverlay(incoming.caller?.display_name||incoming.fromUsername,incoming.fromUserId,'Connecting…');
+        call.peer=createPeerConnection(incoming.fromUserId,incoming.conversationId,false);
+        await call.peer.setRemoteDescription(incoming.offer);
+        if(state.call!==call||!call.active)return;
+        const video=call.peer.getTransceivers().find(t=>t.receiver.track.kind==='video');
+        if(video){video.direction='sendrecv';call.screen.setSender(video.sender);}
+        await flushCallIce(call);
+        const answer=await call.peer.createAnswer();await call.peer.setLocalDescription(answer);
+        if(state.call!==call||!call.active)return;
+        announceCallDescription('call:answer',{answer},call);call.incoming=null;renderCallScreens();
+    } catch(error) {
+        if(state.call===call){showToast(error.message||'Could not answer call',true);rejectIncomingCall();}
     }
 }
 
 function rejectIncomingCall() {
-    const incoming = state.call.incoming;
-    if (incoming) {
-        state.socket.emit('call:reject', {
-            conversationId: incoming.conversationId,
-            targetUserId: incoming.fromUserId,
-            reason: 'declined'
-        });
-    }
-    $('call-incoming').classList.remove('active');
-    resetCallState();
+    const incoming=state.call.incoming;
+    if(incoming)sendCallSignal('call:reject',{reason:'declined'},{id:incoming.callId,conversationId:incoming.conversationId,targetUserId:incoming.fromUserId});
+    endCurrentCall(false);
 }
 
 async function handleCallAnswer(data) {
-    if (!state.call.peer || data.conversationId !== state.call.conversationId) return;
-    await state.call.peer.setRemoteDescription(new RTCSessionDescription(data.answer));
-    markCallConnected();
+    const call=state.call;
+    if(!call.peer||data.callId!==call.id||data.fromUserId!==call.targetUserId)return;
+    try {await call.peer.setRemoteDescription(data.answer);await flushCallIce(call);}
+    catch(error){if(state.call===call){showToast('Could not connect the call',true);endCurrentCall();}}
 }
 
 async function handleCallIceCandidate(data) {
-    if (!state.call.peer || data.conversationId !== state.call.conversationId || !data.candidate) return;
-    try {
-        await state.call.peer.addIceCandidate(new RTCIceCandidate(data.candidate));
-    } catch (err) {
-        console.warn('Failed to add ICE candidate', err);
-    }
+    const call=state.call;
+    if(!data.candidate||!(data.callId===call.id||data.callId===call.incoming?.callId))return;
+    if(data.fromUserId!==(call.targetUserId||call.incoming?.fromUserId))return;
+    if(call.remoteIce.length<128)call.remoteIce.push(data.candidate);
+    await flushCallIce(call);
 }
 
 function handleCallRejected(data) {
-    if (data.conversationId !== state.call.conversationId) return;
-    showToast(data.reason === 'busy' ? 'User is busy on another call' : 'Call declined');
-    endCurrentCall(false, 'declined');
+    if(data.callId!==state.call.id)return;
+    showToast(data.reason==='busy'?'User is busy on another call':'Call declined');endCurrentCall(false,'declined');
 }
 
 function handleRemoteCallEnded(data) {
-    const isActiveCall = data.conversationId === state.call.conversationId;
-    const isIncomingCall = data.conversationId === state.call.incoming?.conversationId;
-    if (!isActiveCall && !isIncomingCall) return;
-    showToast('Call ended');
-    endCurrentCall(false, 'ended');
+    if(data.callId!==state.call.id&&data.callId!==state.call.incoming?.callId)return;
+    showToast(data.reason==='timeout'?'Call was not answered':'Call ended');endCurrentCall(false,'ended');
 }
 
-function endCurrentCall(notifyPeer = true, completionTone = null) {
-    const { peer, localStream, remoteStream, conversationId, targetUserId, active } = state.call;
-    if (notifyPeer && active && conversationId && targetUserId && state.socket?.connected) {
-        state.socket.emit('call:end', { conversationId, targetUserId });
+function endCurrentCall(notifyPeer=true,completionTone=null) {
+    const call=state.call;
+    if(notifyPeer&&call.active)sendCallSignal('call:end',{},call);
+    call.active=false;call.screen?.close();call.peer?.close();
+    call.localStream?.getTracks().forEach(track=>track.stop());call.remoteStream?.getTracks().forEach(track=>track.stop());
+    const audio=$('remote-audio');if(audio)audio.srcObject=null;
+    hideCallOverlay();resetCallState();renderCallScreens();
+    if(completionTone==='hangup')callSounds.playHangup();
+    if(completionTone==='ended')callSounds.playEnded();
+    if(completionTone==='declined')callSounds.playDeclined();
+}
+
+async function toggleScreenShare() {
+    const call=state.call;
+    if(!call.screen)return showToast('Connect a call before sharing a screen.',true);
+    try {if(call.screen.snapshot().sharing)await call.screen.stop();else await call.screen.start();}
+    catch(error){if(state.call===call&&call.active)showToast(['NotAllowedError','AbortError'].includes(error.name)?'Screen selection cancelled. Your call is still connected.':error.message,true);}
+}
+
+function renderCallScreens() {
+    const call=state.call,view=call.screen?.snapshot()||{},connected=call.peer?.connectionState==='connected';
+    const hasScreen=!!view.remoteSharing||!!view.sharing;
+    document.body.classList.toggle('has-screen-share',hasScreen);
+    if(hasScreen&&!call.screenPositioned&&window.innerWidth<=600){
+        call.screenPositioned=true;
+        requestAnimationFrame(()=>{if(state.call===call&&call.active){const card=$('call-overlay');setCallCardPosition(window.innerWidth-card.offsetWidth-8,window.innerHeight-card.offsetHeight-8);}});
     }
-    peer?.close();
-    localStream?.getTracks().forEach(track => track.stop());
-    remoteStream?.getTracks().forEach(track => track.stop());
-    const audio = $('remote-audio');
-    if (audio) audio.srcObject = null;
-    hideCallOverlay();
-    resetCallState();
-    if (completionTone === 'hangup') callSounds.playHangup();
-    if (completionTone === 'ended') callSounds.playEnded();
-    if (completionTone === 'declined') callSounds.playDeclined();
+    const share=$('call-share-btn');
+    if(share){share.disabled=!connected||!!view.pending;share.classList.toggle('sharing',!!view.sharing);share.setAttribute('aria-pressed',String(!!view.sharing));share.title=view.pending?'Choose a screen or window':view.sharing?'Stop sharing your screen':'Share your screen';share.setAttribute('aria-label',share.title);}
+    const local=$('screen-local-video'),remote=$('screen-remote-video');
+    if(local&&local.srcObject!==(view.localStream||null)){local.srcObject=view.localStream||null;if(local.srcObject)local.play().catch(()=>{});}
+    if(remote&&remote.srcObject!==(view.remoteSharing?view.remoteStream:null)){remote.srcObject=view.remoteSharing?view.remoteStream:null;if(remote.srcObject)remote.play().catch(()=>{});}
+    if(view.remoteSharing&&!call.wasRemoteSharing)call.viewerMinimised=false;
+    call.wasRemoteSharing=!!view.remoteSharing;
+    $('screen-local-preview').hidden=!view.sharing;
+    $('screen-share-viewer').hidden=!view.remoteSharing||!!call.viewerMinimised;
+    $('call-view-screen').hidden=!view.remoteSharing;
+    $('screen-peer-name').textContent=`${call.name||'Contact'}’s screen`;
+    $('screen-share-status').textContent=view.remotePaused?'Waiting for shared screen…':'Live screen · Private call';
+    $('call-sharing-status').hidden=!view.sharing;
+    if(!view.remoteSharing&&document.fullscreenElement===$('screen-share-viewer'))document.exitFullscreen().catch(()=>{});
 }
 
 function toggleMuteCall() {

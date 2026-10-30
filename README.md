@@ -35,6 +35,19 @@ While signed in, open **Menu → Account security**, confirm your current passwo
 
 Password recovery does not reconstruct missing local encryption keys. The project contains an existing Signal integration and legacy fallback behavior; it has not undergone an independent security audit. Do not treat account recovery or transport encryption as a guarantee against a malicious host administrator.
 
+## Screen sharing and Linux terminal
+
+Connect a private voice call, then choose **Share your screen** on the call card. Your browser asks you to select a screen/window each time. The call keeps microphone audio separate. Both participants can share independently; the viewer supports fullscreen and minimise, and chat remains available. Use **Stop sharing**, the browser's native stop button, or end the call to stop capture. No screen recording is stored on the server. Sharing requires a supported desktop browser and HTTPS; viewers do not need a local launcher.
+
+**Menu → Local terminal** (also in the sidebar) opens your own Linux terminal. First download/extract the small launcher and run `python3 install.py` as your normal desktop user, without sudo. The browser may ask to open the installed handler. The terminal runs natively on your PC with your existing shell/SSH configuration; it is not a remote server/container shell. No terminal commands, SSH passwords or terminal output are sent through Messenger. The launcher accepts only a fixed open-terminal action and has no listening service/port. Setup/uninstall instructions and readable source are in `companion/linux/README.md` and the download archive.
+
+Rebuild/verify the source-visible launcher after modifying it:
+
+```sh
+python3 scripts/build-linux-launcher.py
+python3 -m unittest discover -s test -p '*_test.py'
+```
+
 ## Games and UI builds
 
 The repository includes game sources, prebuilt scenes and the React/Vite inbox and dice UI. Multiplayer games include Ludo, Wizard Chess, Rally Club, Scribble, Memory Match, three-round Word Guess, Reversi, Gomoku and arcade classics. Solo games include Desk Racer,2048, Breakout, Snake and Minesweeper.

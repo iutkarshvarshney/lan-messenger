@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="/css/connect.css">
     <link rel="stylesheet" href="/css/game-layout.css">
     <link rel="stylesheet" href="/css/account-security.css">
+    <link rel="stylesheet" href="/css/screen-share.css">
+    <link rel="stylesheet" href="/css/local-terminal.css">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20261023-edge">
     <meta name="theme-color" content="#0f1b28">
 </head>
@@ -130,6 +132,7 @@
                                 <div class="workspace-menu-heading">YOUR WORKSPACE</div>
                                 <button type="button" class="dropdown-item" id="menu-profile" role="menuitem" aria-label="Profile"><span class="menu-icon" data-ui-icon="user"></span><span class="menu-copy"><strong>Profile</strong><small>Manage your details</small></span></button>
                                 <button type="button" class="dropdown-item" id="menu-new-group" role="menuitem" aria-label="New Group"><span class="menu-icon" data-ui-icon="users"></span><span class="menu-copy"><strong>New group</strong><small>Bring your team together</small></span></button>
+                                <button type="button" class="dropdown-item" id="menu-terminal" role="menuitem" aria-label="Local terminal"><span class="menu-icon"><svg class="menu-terminal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m7 9 3 3-3 3m6 0h4"/></svg></span><span class="menu-copy"><strong>Local terminal</strong><small>Open on your Linux PC</small></span></button>
                                 <button type="button" class="dropdown-item" id="menu-security" role="menuitem" aria-label="Account security"><span class="menu-icon" data-ui-icon="shield"></span><span class="menu-copy"><strong>Account security</strong><small>Save private recovery codes</small></span></button>
                                 <div class="workspace-menu-divider" role="separator"></div>
                                 <button type="button" class="dropdown-item danger" id="menu-logout" role="menuitem" aria-label="Logout"><span class="menu-icon" data-ui-icon="logout"></span><span class="menu-copy"><strong>Log out</strong><small>Sign out of this device</small></span></button>
@@ -949,11 +952,28 @@
             <div class="call-timer" id="call-timer">00:00</div>
             <div class="call-actions">
                 <button class="call-action-btn" id="call-mute-btn" title="Mute microphone">🎙</button>
+                <button class="call-action-btn" id="call-share-btn" type="button" title="Share your screen" aria-label="Share your screen" aria-pressed="false" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="3" width="18" height="13" rx="2"/><path d="M8 21h8m-4-5v5m-4-12 4-4 4 4m-4-4v8"/></svg></button>
                 <button class="call-action-btn danger" id="call-end-btn" title="End call">✕</button>
             </div>
+            <span class="call-sharing-status" id="call-sharing-status" hidden><i></i>You’re sharing your screen</span>
+            <button type="button" id="call-view-screen" class="screen-view-link" hidden>View shared screen</button>
             <audio id="remote-audio" autoplay></audio>
         </div>
     </div>
+
+    <section class="screen-share-viewer" id="screen-share-viewer" aria-label="Shared screen viewer" hidden>
+        <header><div><span class="screen-live-dot"></span><div><h2 id="screen-peer-name">Shared screen</h2><p id="screen-share-status">Live screen · Private call</p></div></div><div class="screen-view-actions">
+            <button type="button" id="screen-fullscreen-btn" aria-label="Fullscreen shared screen" title="Fullscreen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m8 0h5v-5"/></svg></button>
+            <button type="button" id="screen-minimise-btn" aria-label="Minimise shared screen" title="Minimise">−</button>
+        </div></header>
+        <div class="screen-video-stage"><video id="screen-remote-video" autoplay playsinline muted></video></div>
+        <footer>Screen shared by your contact. You can keep chatting while watching.</footer>
+    </section>
+    <aside class="screen-local-preview" id="screen-local-preview" aria-label="Your shared screen" hidden>
+        <div class="screen-local-label"><span class="screen-live-dot"></span>You’re sharing</div>
+        <video id="screen-local-video" autoplay playsinline muted></video>
+        <button type="button" id="screen-stop-sharing">Stop sharing</button>
+    </aside>
 
     <div class="call-incoming" id="call-incoming">
         <div class="call-incoming-info">
@@ -1010,6 +1030,7 @@
     <script src="/js/ludo-rules.js"></script>
     <script src="/js/ludo-board.js"></script>
     <script src="/js/audio-input.js"></script>
+    <script src="/js/screen-share.js"></script>
     <script src="/js/app.js"></script>
     <script src="/js/refresh.js" defer></script>
     <script src="/native/messenger-native.js" defer></script>
@@ -1056,5 +1077,6 @@
 <script src="/js/game-icons.js"></script>
 <script src="/js/arcade.js"></script>
 <script src="/js/account-security.js"></script>
+<script src="/js/local-terminal.js"></script>
 </body>
 </html>

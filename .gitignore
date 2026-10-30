@@ -1,4 +1,4 @@
-node_modules/
+node_modules
 **/node_modules/
 .env
 .env.*
@@ -26,3 +26,5 @@ public/stickers/gif_memes/
 meme gif/
 docs/*progress*
 docs/current-work-private.md
+
+!public/downloads/lan-messenger-linux-terminal.tar.gz

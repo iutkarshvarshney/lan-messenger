@@ -67,7 +67,10 @@ class CallRelay {
   clearTimeout(call.timer);this.calls.delete(call.id);
   for(const id of [call.caller,call.callee])if(this.users.get(id)===call.id)this.users.delete(id);
  }
- log(call,user,text){const message=this.db.addMessage(call.conversationId,user,text,'system');this.io.to(`conv:${call.conversationId}`).emit('message:new',message);}
+ log(call,user,text){
+  // Account/chat deletion may race a pending timeout; call cleanup must still finish.
+  try{const message=this.db.addMessage(call.conversationId,user,text,'system');this.io.to(`conv:${call.conversationId}`).emit('message:new',message);}catch(error){}
+ }
  disconnect(socket){
   const call=this.calls.get(this.users.get(socket.user.id));
   if(!call||![call.callerSocket,call.calleeSocket].includes(socket.id))return;
