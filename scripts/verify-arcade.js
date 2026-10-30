@@ -55,5 +55,5 @@ async function invite(a,b,users,conv,type,eventName){const requested=event(b,'ga
  const drawing=event(b,'scribble:draw');a.emit('scribble:draw',{conversationId:group.id,drawData:{type:'line',from:{x:0,y:0},to:{x:40,y:50},color:'#123456',size:5}});assert.equal((await drawing).drawData.to.x,40);
  const ended=event(a,'scribble:round_ended');b.emit('scribble:guess',{conversationId:group.id,guess:words[0]});await ended;
  const closed=event(b,'scribble:game_over');a.emit('scribble:leave',{conversationId:group.id});await closed;console.log('PASS Scribble lobby, word secrecy, drawing, guess, round and cancellation');
- fs.writeFileSync('/tmp/messenger-arcade-qa.kxpQJA/fixtures.json',JSON.stringify({users,conversation:conv}),{mode:0o600});
+ fs.writeFileSync(process.env.QA_FIXTURES_PATH||require('node:path').join(require('node:os').tmpdir(),'lan-messenger-arcade-fixtures.json'),JSON.stringify({users,conversation:conv}),{mode:0o600});
 })().catch(e=>{console.error(e);process.exitCode=1;}).finally(()=>sockets.forEach(s=>s.disconnect()));
